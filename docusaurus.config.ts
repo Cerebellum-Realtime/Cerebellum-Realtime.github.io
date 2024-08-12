@@ -3,20 +3,20 @@ import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
-  title: "Willow",
-  tagline: "Willow Framework",
+  title: "Cerebellum",
+  tagline: "Cerebellum",
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
-  url: "https://willow-cdc.github.io",
+  url: "https://cerebellum-realtime.github.io",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "willow-cdc", // Usually your GitHub org/user name.
-  projectName: "willow-cdc.github.io", // Usually your repo name.
+  organizationName: "Cerebellum-Realtime", // Usually your GitHub org/user name.
+  projectName: "Cerebellum-Realtime.github.io", // Usually your repo name.
   trailingSlash: false,
   deploymentBranch: "gh-pages",
 
@@ -96,7 +96,7 @@ const config: Config = {
         alt: "Willow Logo",
         src: "img/logo.png",
         width: 100,
-        href: "/"
+        href: "/",
       },
       links: [
         {
@@ -111,8 +111,8 @@ const config: Config = {
               to: "/#team",
             },
             {
-              label: 'Docs',
-              to: '/docs/Prerequisites',
+              label: "Docs",
+              to: "/docs/Prerequisites",
             },
             {
               label: "Github",
