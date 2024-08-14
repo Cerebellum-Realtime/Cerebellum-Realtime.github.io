@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 
 const FadeInSection = ({ children, fadeDistance = 300 }) => {
   const [isVisible, setVisible] = useState(false);
-  const domRef = useRef();
+  const domRef = useRef<HTMLDivElement>(null);
 
   const checkVisibility = () => {
     if (!domRef.current) {
@@ -25,7 +25,7 @@ const FadeInSection = ({ children, fadeDistance = 300 }) => {
     <div
       className={`fade-in-section ${
         isVisible ? "is-visible" : ""
-      } border-t border-solid border-slate-300 border-l-0 border-r-0 border-b-0 `}
+      } border-t border-solid border-slate-300 border-l-0 border-r-0 border-b-0 dark:border-slate-700`}
       ref={domRef}
     >
       {children}

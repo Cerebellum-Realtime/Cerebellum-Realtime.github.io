@@ -62,11 +62,11 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: "img/willow_transparent.png",
+    image: "img/cerebellum_transparent.png",
     navbar: {
-      title: "Willow",
+      title: "Cerebellum",
       logo: {
-        alt: "Willow Logo",
+        alt: "Cerebellum Logo",
         src: "img/logo.png",
       },
       items: [
@@ -78,13 +78,13 @@ const config: Config = {
           label: "Docs",
         },
         {
-          to: "/#team",
+          to: "/team",
           label: "Team",
           position: "right",
           activeBasePath: "never-active",
         },
         {
-          href: "https://github.com/willow-cdc",
+          href: "https://github.com/cerebellum-realtime",
           label: "GitHub",
           position: "right",
         },
@@ -93,7 +93,7 @@ const config: Config = {
     footer: {
       style: "light",
       logo: {
-        alt: "Willow Logo",
+        alt: "Cerebellum Logo",
         src: "img/logo.png",
         width: 100,
         href: "/",
@@ -108,7 +108,7 @@ const config: Config = {
             },
             {
               label: "Team",
-              to: "/#team",
+              to: "/team",
             },
             {
               label: "Docs",
@@ -116,12 +116,12 @@ const config: Config = {
             },
             {
               label: "Github",
-              to: "https://github.com/willow-cdc",
+              to: "https://github.com/cerebellum-realtime",
             },
           ],
         },
       ],
-      copyright: "Copyright © 2024 Willow",
+      copyright: "Copyright © 2024 Cerebellum",
     },
     prism: {
       theme: prismThemes.github,

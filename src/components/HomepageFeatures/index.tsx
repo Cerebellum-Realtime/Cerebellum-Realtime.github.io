@@ -1,43 +1,41 @@
-import clsx from 'clsx';
-import Heading from '@theme/Heading';
-import styles from './styles.module.css';
-import Team from './Team';
-import FadeInSection from './FadeInSection';
+import FadeInSection from "./FadeInSection";
+import ReactPlayer from "react-player";
+
 function Component1() {
   return (
-    <div className="max-w-full mx-auto flex justify-between gap-5 py-8 2xl:px-48 lg:py-20 px-8 bg-gray-100 sectionA place-items-center">
-      <div className="w-[100%] lg:w-[80%] hidden md:block">
+    <div className="sectionA mx-auto flex max-w-full place-items-center justify-between gap-5 bg-gray-100 px-8 py-8 lg:py-20 2xl:px-48">
+      <div className="shadow-l hidden w-[80%] bg-transparent md:block lg:w-[80%]">
         <figure>
-          <img
-            src="/img/case-study/3.1-demo.gif"
-            className="diagram screenshot"
-            alt="A demonstration of Willow. On the left side of the screen is a PostgreSQL terminal. On the right side of the screen is a Redis cache shown in RedisInsight. An INSERT command is performed in the PostgreSQL terminal, and the inserted data automatically appears in the Redis cache."
-          />
+          <video
+            src="/cerebellum/cbdeployVersion2.mp4"
+            loop
+            autoPlay
+            muted
+            className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+          ></video>
         </figure>
       </div>
       <div className="text-center">
-        <h1 className="text-gray-600 dark:text-slate-100 text-4xl md:text-[44px] font-medium tracking-tight leading-tight md:leading-[52px] mt-0">
-          Sync caches in near real-time using change data capture
+        <h1 className="mt-0 text-4xl font-medium leading-tight tracking-tight text-gray-600 dark:text-slate-100 md:text-[44px] md:leading-[52px]">
+          Hassle-free deployment with our CLI
         </h1>
+        <p className="mb-2 text-xl tracking-wide text-gray-600 dark:text-slate-100">
+          Just a few simple commands to deploy a scalable AWS infrastructure
+          built specifically for WebSocket applications
+        </p>
         <figure>
           <img
             src="/img/case-study/3.1-demo.gif"
-            className="diagram screenshot max-w-[450px] md:hidden w-[90%]"
+            className="diagram screenshot w-[90%] max-w-[450px] md:hidden"
             alt="A demonstration of Willow. On the left side of the screen is a PostgreSQL terminal. On the right side of the screen is a Redis cache shown in RedisInsight. An INSERT command is performed in the PostgreSQL terminal, and the inserted data automatically appears in the Redis cache."
           />
         </figure>
-        <p className="text-gray-600 dark:text-slate-100 uppercase text-large tracking-wide font-semibold mt-6 mb-2">
+        <p className="text-large mb-2 font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-100">
           Technologies
         </p>
-        <div className="flex gap-4 md:mt-3 justify-center">
-          <img className="size-full w-14" src="/img/debezium.svg" />
-          <img className="size-full w-14 dark:hidden" src="/img/kafka.svg" />
-          <img
-            className="size-full w-8 hidden dark:block mx-3"
-            src="/img/kafka_white.svg"
-          />
+        <div className="flex justify-center gap-5 md:mt-3">
           <img className="size-full w-14" src="/img/typescript.svg" />
-          <img className="size-full w-14 ml-2" src="/img/docker.svg" />
+          <img className="ml-2 size-full w-14" src="/img/docker.svg" />
         </div>
       </div>
     </div>
@@ -46,26 +44,26 @@ function Component1() {
 
 function Component2() {
   return (
-    <div className="dark:sectionB max-w-full mx-auto flex justify-between py-8 gap-5 2xl:px-48 lg:py-20 px-8 items-center">
-      <div className="text-center py-0">
-        <h1 className="text-gray-600 dark:text-slate-100 text-4xl md:text-[44px] font-medium tracking-tight leading-tight md:leading-[52px] mt-0">
-          Easy to setup and teardown
+    <div className="sectionB mx-auto flex max-w-full items-center justify-between gap-5 bg-white px-8 py-8 lg:py-20 2xl:px-48">
+      <div className="py-0 text-center">
+        <h1 className="mt-0 text-4xl font-medium leading-tight tracking-tight text-gray-600 dark:text-slate-100 md:text-[44px] md:leading-[52px]">
+          Drop-in integration with our React SDK
         </h1>
         <img
-          src="/img/case-study/3.2-2_source.png"
+          src="/img/Cerebellum-FullInfra.drawio.png"
           alt="source form"
-          className="max-w-[450px] md:hidden w-[90%] mx-auto rounded shadow-[0_0_10px_grey] dark:shadow-none"
+          className="mx-auto w-[90%] max-w-[450px] rounded shadow-[0_0_10px_grey] dark:shadow-none md:hidden"
         />
-        <p className="text-gray-600 dark:text-slate-100 text-xl tracking-wide mt-6 mb-2">
-          Without requiring in-depth technical knowledge, pipelines can be
-          created or deleted using Willow's intuitive UI
+        <p className="mb-2 text-xl tracking-wide text-gray-600 dark:text-slate-100">
+          With a few of lines of code, Cerebellum seamlessly integrates into
+          your React application
         </p>
       </div>
-      <div className="w-[100%] lg:w-[60%] hidden md:block">
+      <div className="hidden w-[100%] md:block lg:w-[60%]">
         <img
-          src="/img/case-study/3.2-2_source.png"
+          src="/img/Cerebellum-FullInfra.drawio.png"
           alt="source form"
-          className="align-top object-fill border-2 rounded shadow-[0_0_10px_grey] dark:shadow-none"
+          className="rounded border-2 object-fill align-top shadow-[0_0_10px_grey] dark:shadow-none"
         />
       </div>
     </div>
@@ -74,29 +72,22 @@ function Component2() {
 
 function Component3() {
   return (
-    <div className="max-w-full mx-auto flex justify-center gap-5 py-8 2xl:px-48 lg:py-20 px-8 bg-gray-100 sectionA place-items-center">
-      <div className="w-[100%] lg:w-[60%] 2xl:w-[53%] hidden md:block">
+    <div className="sectionA mx-auto flex max-w-full flex-col place-items-center justify-center gap-5 bg-gray-200 px-8 py-8 lg:py-20 2xl:px-48">
+      <div className="flex w-[100%] flex-col items-center justify-center md:mt-3 md:block lg:w-[60%] 2xl:w-[53%]">
+        <div className="mb-5 flex flex-col items-center justify-center text-center md:mt-3">
+          <h1 className="mt-0 text-4xl font-medium leading-tight tracking-tight text-gray-600 dark:text-slate-100 md:text-[44px] md:leading-[52px]">
+            Powered by AWS
+          </h1>
+          <p className="mb-2 text-xl tracking-wide text-gray-600 dark:text-slate-100">
+            Cerebellum is a cloud-native solution built on AWS, providing a
+            scalable and resource-efficient architecture out of the box
+          </p>
+        </div>
         <img
-          src="/img/home-page-diy.png"
+          src="/img/Cerebellum-FullInfra.drawio.png"
           alt="Producer Consumer Image"
-          className="align-top object-fill rounded shadow-[0_0_10px_grey] dark:shadow-none"
+          className="rounded object-fill align-top shadow-[0_0_10px_grey] dark:shadow-none"
         />
-      </div>
-      <div className="text-center">
-        <h1 className="text-gray-600 dark:text-slate-100 text-4xl md:text-[44px] font-medium tracking-tight leading-tight md:leading-[52px] mt-0">
-          Say goodbye to DIY solutions
-        </h1>
-        <img
-          src="/img/home-page-diy.png"
-          alt="Producer Consumer"
-          className="max-w-[450px] md:hidden w-[90%] mx-auto border-2 rounded block shadow-[0_0_10px_grey]"
-        />
-        <a
-          href="/case-study"
-          className="text-white font-normal px-5 text-lg py-3 rounded-full bg-willowGreen-600 antialiased inline-block mt-6 hover:no-underline hover:text-white hover:bg-willowGreenLight transition"
-        >
-          Read Case Study
-        </a>
       </div>
     </div>
   );
@@ -114,10 +105,6 @@ export default function HomepageFeatures(): JSX.Element {
 
       <FadeInSection fadeDistance={350}>
         <Component3 />
-      </FadeInSection>
-
-      <FadeInSection fadeDistance={350}>
-        <Team />
       </FadeInSection>
     </div>
   );

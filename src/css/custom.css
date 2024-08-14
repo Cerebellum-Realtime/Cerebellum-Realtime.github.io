@@ -6,34 +6,34 @@
 
 /* You can override the default Infima variables here. */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --ifm-color-primary: #409935;
-  --ifm-color-primary-dark: #3a8a30;
-  --ifm-color-primary-darker: #36822d;
-  --ifm-color-primary-darkest: #2d6b25;
-  --ifm-color-primary-light: #46a83a;
-  --ifm-color-primary-lighter: #4ab03d;
-  --ifm-color-primary-lightest: #58c14b;
+  --ifm-color-primary: #7771fe;
+  --ifm-color-primary-dark: #5f5acb;
+  --ifm-color-primary-darker: #474498;
+  --ifm-color-primary-darkest: #302d66;
+  --ifm-color-primary-light: #928dfe;
+  --ifm-color-primary-lighter: #adaafe;
+  --ifm-color-primary-lightest: #c9c6ff;
   --ifm-code-font-size: 95%;
-  --ifm-font-family-base: 'Roboto';
+  --ifm-font-family-base: "Roboto";
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #56cd47;
-  --ifm-color-primary-dark: #45c335;
-  --ifm-color-primary-darker: #41b832;
-  --ifm-color-primary-darkest: #369829;
-  --ifm-color-primary-light: #6ad35d;
-  --ifm-color-primary-lighter: #74d668;
-  --ifm-color-primary-lightest: #92df88;
+[data-theme="dark"] {
+  --ifm-color-primary: #10c7fe;
+  --ifm-color-primary-dark: #0d9fcb;
+  --ifm-color-primary-darker: #0a7798;
+  --ifm-color-primary-darkest: #065066;
+  --ifm-color-primary-light: #40d2fe;
+  --ifm-color-primary-lighter: #70ddfe;
+  --ifm-color-primary-lightest: #9fe9ff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
@@ -49,7 +49,9 @@ img {
 .fade-in-section {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .fade-in-section.is-visible {
@@ -70,11 +72,11 @@ img {
   box-shadow: 100 100 300px white;
 }
 
-html[data-theme='dark'] .sectionA {
+html[data-theme="dark"] .sectionA {
   background-color: rgb(40, 42, 44);
 }
 
-html[data-theme='dark'] .sectionB {
+html[data-theme="dark"] .sectionB {
   background-color: rgb(26, 27, 27);
 }
 
@@ -94,6 +96,7 @@ figcaption {
 
 .diagram {
   border-radius: 10px;
+  background-color: white; /* Set background to white */
   /* border-bottom: solid #7c7995; */
   /* box-shadow: 0px 1px 10px rgba(124, 121, 149, 0.2); */
 }
@@ -106,11 +109,11 @@ video {
   width: 100%;
 }
 
-a[class*='footerLogoLink'] {
+a[class*="footerLogoLink"] {
   opacity: 1;
 }
 
-a[class*='footerLogoLink']:hover {
+a[class*="footerLogoLink"]:hover {
   opacity: 0.8;
 }
 
@@ -121,8 +124,8 @@ a[class*='footerLogoLink']:hover {
 
   .col--8 {
     --ifm-col-width: calc(6.5 / 12 * 100%);
-    margin-right: 100px;
-    margin-left: 100px;
+    margin-left: 80px;
+    margin-right: auto;
     font-size: 18px;
   }
 }
@@ -160,4 +163,20 @@ div.col--8 article h4 {
 .navbar__title {
   text-transform: uppercase;
   font-size: 1.2rem;
+}
+
+.table-of-contents__left-border {
+  border-left: none;
+  height: 100%;
+  border-right: 1px solid var(--ifm-toc-border-color);
+}
+
+.image-container {
+  border-radius: 10px; /* Optional: Add rounded corners */
+  margin: 0 auto; /* Center the entire figure horizontally */
+}
+
+.image-container img {
+  border-radius: 10px;
+  background-color: white; /* Ensures the image itself has a white background */
 }
