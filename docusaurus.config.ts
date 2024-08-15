@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "Cerebellum",
   tagline: "Cerebellum",
-  favicon: "img/favicon.ico",
+  favicon: "/img/favicon.ico",
 
   // Set the production url of your site here
   url: "https://cerebellum-realtime.github.io",
