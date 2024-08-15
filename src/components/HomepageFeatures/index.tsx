@@ -21,8 +21,8 @@ function Component1() {
           Hassle-free deployment with our CLI
         </h1>
         <p className="mb-2 text-xl tracking-wide text-gray-600 dark:text-slate-100">
-          Just a few simple commands to deploy a scalable AWS infrastructure
-          built specifically for WebSocket applications
+          Deploy a scalable AWS infrastructure built specifically for WebSocket
+          applications with just a few simple commands
         </p>
 
         <p className="text-large mb-2 font-semibold uppercase tracking-wide text-gray-600 dark:text-slate-100">
@@ -58,7 +58,7 @@ function Component2() {
           your React application
         </p>
       </div>
-      <div className="4xl:w-[60%] 5xl:w-[40%] my-10 w-[100%]">
+      <div className="4xl:w-[60%] 5xl:w-[40%] my-10 w-[85%]">
         <img
           src="/img/Cerebellum-FullInfra.drawio.png"
           alt="A picture of the Cerebellum SDK in React"
@@ -71,7 +71,7 @@ function Component2() {
 
 function Component3() {
   return (
-    <div className="mx-auto flex max-w-full flex-col place-items-center justify-center gap-5 bg-gray-200 px-8 py-8 lg:py-20 2xl:px-48">
+    <div className="sectionA mx-auto flex max-w-full flex-col place-items-center justify-center gap-5 bg-gray-200 px-8 py-8 lg:py-20 2xl:px-48">
       <div className="flex w-[100%] flex-col items-center justify-center md:mt-3 md:block lg:w-[60%] 2xl:w-[53%]">
         <div className="mb-5 flex flex-col items-center justify-center text-center md:mt-3">
           <h1 className="mt-0 text-4xl font-medium leading-tight tracking-tight text-gray-600 dark:text-slate-100 md:text-[44px] md:leading-[52px]">
@@ -82,7 +82,7 @@ function Component3() {
             scalable and resource-efficient architecture out of the box
           </p>
         </div>
-        <div className="flex justify-center">
+        <div className="flex max-w-full justify-center">
           <img
             src="/img/Cerebellum-FullInfra.drawio.png"
             alt="Cerebellum architecture diagram"

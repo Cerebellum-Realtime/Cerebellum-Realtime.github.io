@@ -602,11 +602,11 @@ At 0.25 vCPU and 0.5 GB memory, Cerebellum’s WebSocket servers will comfortabl
 
 #### Archived Message Retrieval
 
-We’ve implemented automated message archiving to reduce costs by moving older data from DynamoDB’s high-speed storage. While retrieval is supported, our WebSocket server doesn’t yet automate this. Developers currently handle it manually.
+We’ve implemented automated message archiving to reduce costs by moving older data from DynamoDB to S3. While retrieval is supported, our WebSocket server doesn’t yet automate this. Developers currently handle it manually.
 
-#### Rate Limiting Capabilities
+#### Rate Limiting
 
-In building our scalable WebSocket infrastructure with an Application Load Balancer (ALB), we focused on ease of integration and scalability. The ALB effectively manages WebSocket connections, ensuring high availability and fault tolerance, though it lacks built-in rate-limiting capabilities—an important consideration for protecting servers and ensuring fair usage.
+In building our WebSocket infrastructure with an Application Load Balancer (ALB), we focused on scalability and ease of integration. The ALB effectively manages WebSocket connections, ensuring high availability and fault tolerance, though it lacks built-in rate-limiting capabilities—an important consideration for protecting servers and ensuring fair usage.
 
 Our current setup doesn’t impose rate limits on incoming WebSocket connections, leaving this aspect to be managed by external solutions or client-side throttling. While solutions like API Gateway and AWS WAF offer potential rate-limiting options, they come with additional limitations such as cost and complexity.
 
