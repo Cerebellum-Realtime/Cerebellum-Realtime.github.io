@@ -96,25 +96,6 @@ However, WebSockets come with distinct complexities, particularly when it comes 
 
 Scaling _any_ type of application requires vertical scaling, horizontal scaling, or some combination thereof. Vertical scaling involves adding more power to a single server, while horizontal scaling spreads the load across multiple servers.
 
-<figure>
-<video
-src="/cerebellum/Section Test.mp4"
-loop
-autoPlay
-muted
-className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
-max-width="300px"
-max-height="300px"
-> </video>
-</figure>
-<video
-src="/cerebellum/vertical_scale_cropped.mp4"
-loop
-autoPlay
-muted
-
-> </video>
-
 ← ‘**Vertical Scaling’ and ‘Horizontal Scaling’ gifs →**
 
 <figure className="image-container">
