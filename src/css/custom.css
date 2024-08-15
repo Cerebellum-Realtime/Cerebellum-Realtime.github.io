@@ -106,7 +106,7 @@ figcaption {
 }
 
 video {
-  width: 100%;
+  width: 80%;
 }
 
 a[class*="footerLogoLink"] {
@@ -186,11 +186,29 @@ div.col--8 article h4 {
 }
 
 .image-container {
-  border-radius: 10px; /* Optional: Add rounded corners */
   margin: 0 auto; /* Center the entire figure horizontally */
+}
+
+@media (max-width: 997px) {
+  .image-container img {
+    margin: 0 auto; /* Center the entire figure horizontally */
+    width: 80%;
+  }
+
+  video {
+    width: 100%;
+  }
+  .video-container {
+    flex-direction: column;
+    padding: 0px;
+  }
 }
 
 .image-container img {
   border-radius: 10px;
   background-color: white; /* Ensures the image itself has a white background */
+}
+
+.scaling-gif {
+  flex: 1;
 }
