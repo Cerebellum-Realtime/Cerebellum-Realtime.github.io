@@ -79,7 +79,7 @@ While SSEs are efficient for one-way updates, they do not allow the client to se
 The **WebSocket** protocol offers full-duplex communication over a single long-lived Transmission Control Protocol (TCP) connection. After an initial “handshake” to establish the connection, a dedicated low-latency channel is created, allowing for _instantaneous_ data exchange in _both_ directions.
 
 <figure className="image-container">
-   <img src="/case-study/photos/WebSocket_Diagram.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
+   <img src="/case-study/photos/WebSocket_Diagram1.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
    <figcaption align="center">Figure 2.6: WebSocket Connection</figcaption>
 </figure>
 
@@ -567,7 +567,7 @@ Our WebSocket server uses Socket.io to initialize session connections, where a s
 
 <figure className="image-container">
    <img 
-      src="/case-study/photos/ConnectionStateRecovery_WSHandshake.jpg"
+      src="/case-study/photos/WebSocket_Diagram.png"
       className="diagram"
       alt="WebSocket Connection Handshake"
       width="30%"/> 
@@ -732,7 +732,7 @@ Results:
 
 <figure className="image-container">
    <img 
-      src="/case-study/photos/limit_of_concurrent_idle_users.jpg"
+      src="/case-study/photos/load_test_idle_user.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
@@ -747,7 +747,7 @@ Results:
 
 <figure className="image-container">
    <img 
-      src="/case-study/photos/limit_of_concurrent_active_users.jpg"
+      src="/case-study/photos/load_test_active_user.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />

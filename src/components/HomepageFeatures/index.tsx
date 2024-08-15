@@ -4,16 +4,18 @@ import ReactPlayer from "react-player";
 function Component1() {
   return (
     <div className="sectionA mx-auto flex max-w-full flex-col-reverse place-items-center justify-between gap-5 bg-gray-100 px-8 py-8 lg:flex-row lg:py-20 2xl:px-48">
-      <div className="shadow-l 4xl:w-[80%] 5xl:w-[40%] w-[100%] bg-transparent">
+      <div className="shadow-l w-[100%] bg-transparent 4xl:w-[80%] 5xl:w-[40%]">
         <figure>
           <video
-            src="/cerebellum/cbdeployVersion2.webm"
             loop
             autoPlay
             muted
             playsInline
             className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
-          ></video>
+          >
+            <source src="/cerebellum/cbdeployVersion2.webm" type="video/webm" />
+            <source src="/cerebellum/cbdeployVersion2.mp4" type="video/mp4" />
+          </video>
         </figure>
       </div>
       <div className="flex-grow text-center">
@@ -58,7 +60,7 @@ function Component2() {
           your React application
         </p>
       </div>
-      <div className="4xl:w-[60%] 5xl:w-[40%] my-10 w-[85%]">
+      <div className="my-10 w-[85%] 4xl:w-[60%] 5xl:w-[40%]">
         <img
           src="/img/Cerebellum-FullInfra.drawio.png"
           alt="A picture of the Cerebellum SDK in React"
