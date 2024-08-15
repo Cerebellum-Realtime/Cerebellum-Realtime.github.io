@@ -8,7 +8,7 @@ function HomepageHeader() {
   return (
     <section
       id="hero"
-      className="from-cerebellumPurple-500 to-cerebellumPink-500 - text-8xll flex h-lvh scroll-mt-60 flex-col items-center justify-center gap-8 bg-gradient-to-r p-6 text-2xl sm:flex-col"
+      className="- text-8xll flex h-lvh scroll-mt-60 flex-col items-center justify-center gap-8 bg-gradient-to-r from-cerebellumPurple-500 to-cerebellumPink-500 p-6 text-2xl sm:flex-col"
       // className="bg-gradient-to-r from-cerebellumPurple to-cerebellumPink  flex flex-col justify-center sm:flex-col p-6 items-center gap-8 scroll-mt-40 h-lvh"
     >
       <article className="relative max-w-full px-4 py-8 pb-14 font-sans text-white antialiased md:py-10">
@@ -21,11 +21,12 @@ function HomepageHeader() {
           </em>
         </h1>
         <p className="md:text mx-auto mt-1 max-w-6xl text-center text-xl leading-normal text-gray-100 md:mt-2 md:leading-10">
-          An open-source solution for building Websocket-based applications
+          Built as an open-source solution for scaling Websocket-based
+          applications
         </p>
         <div className="mt-8 flex w-full flex-col-reverse items-center justify-center gap-2 p-6 md:flex-row">
           <Link
-            className="hover:bg-purple-800sm:text-xl hover:border-cerebellumBlue-400 hover:bg-cerebellumBlue-400 rounded-xl border-2 border-solid px-5 pb-3 pt-3 text-white antialiased transition hover:text-white hover:no-underline"
+            className="hover:bg-purple-800sm:text-xl rounded-xl border-2 border-solid px-5 pb-3 pt-3 text-white antialiased transition hover:border-cerebellumBlue-400 hover:bg-cerebellumBlue-400 hover:text-white hover:no-underline"
             to="/case-study"
           >
             Read Case Study
@@ -35,8 +36,6 @@ function HomepageHeader() {
     </section>
   );
 }
-
-//https://infima.dev/docs/components/button/
 
 export default function Home(): JSX.Element {
   return (

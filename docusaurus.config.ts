@@ -76,6 +76,7 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "right",
           label: "Docs",
+          to: "/docs/using-cerebellum",
         },
         {
           to: "/team",
@@ -112,7 +113,7 @@ const config: Config = {
             },
             {
               label: "Docs",
-              to: "/docs/Prerequisites",
+              to: "/docs/using-cerebellum",
             },
             {
               label: "Github",

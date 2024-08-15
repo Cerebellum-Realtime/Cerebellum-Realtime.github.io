@@ -36,10 +36,10 @@ export default function MDXPage(props) {
           keywords={keywords}
           image={image}
         />
-        <main className="mx-auto">
+        <main className="">
           <div className={clsx("row", styles.mdxPageWrapper)}>
             {!hideTableOfContents && MDXPageContent.toc.length > 0 && (
-              <div className="p-4">
+              <div className="sidebar">
                 <TOC
                   toc={MDXPageContent.toc}
                   minHeadingLevel={frontMatter.toc_min_heading_level}
@@ -47,7 +47,12 @@ export default function MDXPage(props) {
                 />
               </div>
             )}
-            <div className={clsx("col", !hideTableOfContents && "col--8")}>
+            <div
+              className={clsx(
+                "col max-w-7xl",
+                !hideTableOfContents && "col--8",
+              )}
+            >
               {unlisted && <Unlisted />}
               <article className="m-w-4xl p-4">
                 <MDXContent>

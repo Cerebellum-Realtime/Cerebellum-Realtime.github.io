@@ -13,6 +13,12 @@ module.exports = {
         sans: ["Inter", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
       },
+      screens: {
+        "3xl": "1620px",
+        "4xl": "1920px",
+        "5xl": "2560px",
+        "6xl": "2880px",
+      },
       colors: {
         cerebellumPink: {
           100: "#f7d2ff",
@@ -67,8 +73,8 @@ module.exports = {
           600: "#5f5acb",
           700: "#474498",
           800: "#302d66",
-          900: "#181733"
-        }
+          900: "#181733",
+        },
       },
     },
   },

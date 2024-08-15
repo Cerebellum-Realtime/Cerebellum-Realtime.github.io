@@ -118,15 +118,27 @@ a[class*="footerLogoLink"]:hover {
 }
 
 @media (min-width: 997px) {
-  .col--2 {
-    --ifm-col-width: calc(3 / 12 * 100%);
+  .sidebar {
+    flex: 0 1 325px;
+    padding: 16px;
   }
 
   .col--8 {
-    --ifm-col-width: calc(6.5 / 12 * 100%);
-    margin-left: 80px;
-    margin-right: auto;
     font-size: 18px;
+  }
+}
+
+@media (min-width: 1350px) {
+  .col--8 {
+    /* --ifm-col-width: calc(6.5 / 12 * 100%); */
+    margin-left: 80px;
+    font-size: 18px;
+    flex: 1;
+  }
+
+  .sidebar {
+    flex: 0 1 350px;
+    padding: 16px;
   }
 }
 
@@ -137,27 +149,29 @@ a[class*="footerLogoLink"]:hover {
 
 div.col--8 article h1 {
   letter-spacing: -1px;
-  margin-top: 16px;
   font-size: 44px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 div.col--8 article h2 {
   letter-spacing: -1px;
   font-size: 32px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  margin-top: 24px;
 }
 
 div.col--8 article h3 {
   font-size: 24px;
   letter-spacing: -0.5px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+  margin-top: 24px;
   line-height: 2.2rem;
 }
 
 div.col--8 article h4 {
   font-size: 20px;
-  margin-bottom: 22px;
+  margin-bottom: 8px;
+  margin-top: 24px;
 }
 
 .navbar__title {
