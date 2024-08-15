@@ -98,14 +98,22 @@ Scaling _any_ type of application requires vertical scaling, horizontal scaling,
 
 <figure>
 <video
-src="img/case-study/HorizontalScaling.mp4"
+src="/cerebellum/Section Test.mp4"
 loop
 autoPlay
 muted
 className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+max-width="300px"
+max-height="300px"
 > </video>
-
 </figure>
+<video
+src="/cerebellum/vertical_scale_cropped.mp4"
+loop
+autoPlay
+muted
+
+> </video>
 
 ← ‘**Vertical Scaling’ and ‘Horizontal Scaling’ gifs →**
 
