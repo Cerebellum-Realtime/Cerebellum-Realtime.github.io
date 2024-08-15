@@ -15,7 +15,7 @@ Cerebellum is a drop-in infrastructure and library for scalable realtime applica
 Alongside our ready-made infrastructure, we offer a Software Development Kit (SDK) and a production-ready WebSocket server, empowering developers to deploy quickly and efficiently without the hassle of managing cloud platforms or connections.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Infrastructure" width="85%"/> 
+   <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Infrastructure" width="85%"/> 
    <figcaption align="center">Figure 1.1: Cerebellum's Infrastructure</figcaption>
 </figure>
 
@@ -31,10 +31,9 @@ Realtime applications are divided into two main categories, each with distinct t
 
 Hard realtime applications demand absolute performance where timing is crucial, and deadlines **must** be met without exception. Missing a deadline in a hard realtime system can lead to total system failure and catastrophic consequences, often involving safety hazards or physical damage. The importance of a task is directly tied to meeting its deadline; missing it can render the task's value null. Examples of such systems include emergency medical devices, industrial automation systems, and flight control systems.
 
-<figure className="image-container">
-   <img src="/img/case-study/photos/Hard_Realtime.png" className="diagram" alt="Hard Realtime" width="30%"/> 
+<figure className="image-container ">
+   <img src="/case-study/photos/Hard_Realtime.png" className="diagram" alt="Hard Realtime" width="30%"/>  <
    <figcaption align="center">Figure 2.1: Hard Realtime</figcaption>
-
 </figure>
 
 #### Soft Realtime
@@ -42,7 +41,7 @@ Hard realtime applications demand absolute performance where timing is crucial, 
 In soft realtime applications, missing a deadline results in a degradation of service quality, which can negatively impact user experience and be quite frustrating. However, it does not lead to system failure or significant harm. The value of a task is somewhat correlated with meeting the deadline—if missed, the value decreases but does not become. Examples of soft realtime systems include messaging apps, online multiplayer games, and collaborative editors.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="30%"/> 
+   <img src="/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="30%"/> 
    <figcaption align="center">Figure 2.2: Soft Realtime</figcaption>
 </figure>
 
@@ -55,21 +54,21 @@ Building on this foundation, we can examine key techniques and technologies that
 **Short polling** involves sending HTTP requests at intervals to check for new data. While simple to implement, it can create unnecessary network traffic and server load when no new updates are available.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/ShortPolling_Diagram.png" className="diagram" alt="Short Polling" width="30%"/> 
+   <img src="/case-study/photos/ShortPolling_Diagram.png" className="diagram" alt="Short Polling" width="30%"/> 
    <figcaption align="center">Figure 2.3: Short Polling</figcaption>
 </figure>
 
 **Long polling** improves on this by keeping the connection open until new data arrives, reducing redundant requests. However, it still requires the client to initiate each new request, which can lead to occasional synchronization issues.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/LongPolling_Diagram.png" className="diagram" alt="Long Polling" width="30%"/> 
+   <img src="/case-study/photos/LongPolling_Diagram.png" className="diagram" alt="Long Polling" width="30%"/> 
    <figcaption align="center">Figure 2.4: Long Polling</figcaption>
 </figure>
 
 **Server-Sent Events** (SSEs) further optimize this process by maintaining an open connection where the server continuously pushes updates to the client as they become available, eliminating the need for repeated requests and minimizing latency.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/SSE_Diagram.png" className="diagram" alt="Server Sent Events" width="30%"/> 
+   <img src="/case-study/photos/SSE_Diagram.png" className="diagram" alt="Server-Sent Events" width="30%"/> 
    <figcaption align="center">Figure 2.5: Server-Sent Events</figcaption>
 </figure>
 
@@ -80,7 +79,7 @@ While SSEs are efficient for one-way updates, they do not allow the client to se
 The **WebSocket** protocol offers full-duplex communication over a single long-lived Transmission Control Protocol (TCP) connection. After an initial “handshake” to establish the connection, a dedicated low-latency channel is created, allowing for _instantaneous_ data exchange in _both_ directions.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/WebSocket_Diagram.png" className="diagram" alt="WebSocket" width="30%"/> 
+   <img src="/case-study/photos/WebSocket_Diagram.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
    <figcaption align="center">Figure 2.6: WebSocket Connection</figcaption>
 </figure>
 
@@ -95,7 +94,7 @@ However, WebTransport is still in development and lacks support across all brows
 We determined that WebSockets are the most suitable for our focus and application. Although each option offers unique advantages, WebSockets excel in providing instantaneous bi-directional communication and are well-established with broad browser support.
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/CommunicationComparisonChart.png" className="diagram" alt="Comparison Chart between different options" width="60%"/> 
+   <img src="/case-study/photos/CommunicationComparisonChart.png" className="diagram" alt="Realtime Comparison Chart" width="60%"/> 
    <figcaption align="center">Figure 2.7: Realtime Techniques & Technologies</figcaption>
 </figure>
 However, WebSockets come with distinct complexities, particularly when it comes to scaling.
@@ -104,30 +103,35 @@ However, WebSockets come with distinct complexities, particularly when it comes 
 
 Scaling _any_ type of application requires vertical scaling, horizontal scaling, or some combination thereof. Vertical scaling involves adding more power to a single server, while horizontal scaling spreads the load across multiple servers.
 
-<div className="flex">
-   <figure className="image-container p-4">
-      <video
-      src="/img/case-study/videos/vertical_scale_cropped.mp4"
-      loop
-      autoPlay
-      muted
-      playsInline
-      className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
-      > </video>
-      <figcaption align="center">Figure 2.8: Vertical Scaling</figcaption>
-      </figure>
-      <figure className="image-container p-4">
-      <video
-         src="/img/case-study/videos/vertical_scale_cropped.mp4"
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/vertical_scale_cropped.mp4"
          loop
          autoPlay
          muted
          playsInline
-         className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
-         > </video>
+         className=" w-full rounded-lg"
+         > 
+         </video>
+      </div>
+      <figcaption align="center">Figure 2.8: Vertical Scaling</figcaption>
+      </figure>
+      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+         <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+            src="/case-study/videos/horizontal_scaling_cropped.mp4"
+            loop
+            autoPlay
+            muted
+            playsInline
+            className="flex-grow w-full rounded-lg"
+            > 
+         </video>
+         </div>
       <figcaption align="center">Figure 2.9: Horizontal Scaling</figcaption>
       </figure>
-
 </div>
 
 Scaling realtime WebSocket applications comes with an additional set of unique challenges. It’s helpful to use HTTP-based applications as a benchmark to understand these challenges.
@@ -138,11 +142,33 @@ One of the main differences between HTTP-based applications and WebSocket applic
 
 In contrast, WebSocket applications keep a persistent connection, meaning that the server must maintain state information for each connection. This complicates scaling, as multiple servers must share and synchronize this state to maintain data consistency across the application. For instance, if two users are connected to different servers, additional infrastructure is needed to ensure they can still communicate seamlessly.
 
-**Not in yet**
-
-<figure className="image-container">
-   **![][image11]![][image12]**  
-</figure>
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/client_server_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className=" w-full"
+         > 
+         </video>
+      </div>
+      <figcaption align="center">Figure 2.8: Vertical Scaling</figcaption>
+      </figure>
+      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <video
+         src="/case-study/videos/client_server_msg_lost_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className="flex-grow w-full rounded-lg"
+         > </video>
+      <figcaption align="center">Figure 2.9: Horizontal Scaling</figcaption>
+      </figure>
+</div>
 
 #### Challenges with Performance
 
@@ -173,7 +199,7 @@ The main solutions we’ll explore in this section are do-it-yourself (DIY), ent
 ### DIY Solutions
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/GenericUserLogo.png" className="diagram" alt="WebSocket" width="5%"/>
+   <img src="/case-study/photos/GenericUserLogo.png" className="diagram" alt="DIY Logo" width="10%"/>
 </figure>
 
 Developer teams whose core product is realtime might want full control over their data, infrastructure, and logical abstractions. In this case, they might use a library like Node.js’ WebSocket library or Socket.io. They could also implement their own WebSocket API. Given realtime is the developer team’s main product offering in this scenario, dedicating significant time to this effort becomes justifiable.
@@ -183,7 +209,7 @@ Implementing a DIY solution requires more effort than any other option. On the o
 ### Enterprise Solutions
 
 <figure className="image-container">
-   <img src="/img/case-study/photos/AblyLogo.png" className="diagram" alt="WebSocket" width="5%"/> 
+   <img src="/case-study/photos/AblyLogo.png" className="diagram" alt="Ably Logo" width="10%"/> 
 </figure>
 
 The story changes if the developer team’s core product is not realtime. If a developer team doesn’t specialize in realtime and wants to add a realtime component to an existing product, they probably would not want to start from scratch. The time spent building a DIY solution would be better invested in working on their core product offering.
@@ -195,7 +221,7 @@ Enterprise solutions require the lowest effort of choices we outline here. They 
 ### Cerebellum
 
 <figure className="image-container">
-   <img src="/img/logo.png" className="diagram" alt="WebSocket" width="5%"/> 
+   <img src="/img/logo.png" className="diagram" alt="Cerebellum Logo" width="10%"/> 
 </figure>
 
 The options we’ve looked at so far sacrifice high control and flexibility in exchange for low effort. Neither of these solutions provides both low effort and high flexibility. We positioned Cerebellum to fit this gap in the market.
@@ -217,9 +243,9 @@ We chose eight comparison points for Ably, PartyKit, Cerebellum, and DIY:
 
 <figure className="image-container">
    <img
-      src="/img/case-study/photos/Product_Comparison_Chart.png"
+      src="/case-study/photos/Product_Comparison_Chart.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Realtime Solution Comparison Chart"
       width="60%"
    />
    <figcaption align="center">Figure 3.1: Comparing Solutions</figcaption>
@@ -247,10 +273,10 @@ We initially built our infrastructure with a single WebSocket server, allowing u
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_OneServer.png"
+      src="/case-study/photos/buildingCB_OneServer.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
-      width="40%"
+      width="35%"
    />
    <figcaption align="center">Figure 4.1: Single-Server Connections</figcaption>
 </figure>
@@ -271,10 +297,10 @@ ECS is an orchestrator—it manages the number of containers running at any give
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_ECSCluster.png"
+      src="/case-study/photos/buildingCB_ECSCluster.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
-      width="40%"
+      width="45%"
    />
    <figcaption align="center">Figure 4.2: ECS Connections</figcaption>
 </figure>
@@ -295,10 +321,17 @@ In the pub/sub model, publishers and subscribers are decoupled. Publishers can s
 
 By implementing a pub/sub system, when a user sends a message to a server, it is received by the pub/sub system and forwarded to all subscribers of that channel, regardless of which server they are connected to. This ensures that all users receive the same information in real time, overcoming the challenges of server isolation and ensuring consistent message delivery across multiple servers.
 
-<figure className="image-container">
-   ![][image20]
+<figure className="flex justify-center">
+   <video
+      src="/case-study/videos/ChannelsPubSub.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+> </video>
+
 </figure>
-**Gif**
 
 #### Redis Streams as Our Pub/Sub System
 
@@ -314,20 +347,25 @@ We selected Redis Streams due to the high availability and low latency provided 
 In our Redis Streams implementation, the message flow differs slightly from traditional pub/sub systems. When a message is published, it is appended to a Redis Stream associated with a specific channel or topic. Each message is stored with a unique ID, ensuring persistence. Servers act as consumers, reading from these streams at their own pace and capacity. After retrieving messages, servers forward them to clients subscribed to the respective channels. This retains the core principles of a traditional pub/sub while also enabling data persistence.
 
 <figure className="image-container">
-   ![][image21]
+   <video
+      src="/case-study/videos/Redis_Streams.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
 </figure>
 
-**Gif**
+With our Redis Streams-based pub/sub system in place, we had to establish a single, secure public entry point while balancing load across multiple servers.
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_Elasticache.png"
+      src="/case-study/photos/buildingCB_Elasticache.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
 </figure>
-
-With our Redis Streams-based pub/sub system in place, we had to establish a single, secure public entry point while balancing load across multiple servers.
 
 #### Balancing the Load Distribution
 
@@ -349,7 +387,7 @@ By handling these tasks, the ALB solved a crucial part of our infrastructure nee
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_LoadBalancer.png"
+      src="/case-study/photos/buildingCB_LoadBalancer.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
@@ -364,10 +402,15 @@ At this stage, our architecture successfully provided realtime scaling and commu
 - **Communication Apps:** Platforms like Slack require persistent message history.
 
 <figure className="image-container">
-   ![][image24]
+   <video
+      src="/case-study/videos/Connection_State_Recovery.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
 </figure>
-
-**Gif**
 
 #### Choosing the Right Database for Realtime Applications
 
@@ -386,7 +429,14 @@ Direct communication between servers and databases in a realtime environment is 
 - **Database Bottlenecks:** High-volume realtime applications can overwhelm databases with rapid read/write requests, potentially causing performance degradation or system failures.
 
 <figure className="image-container">
-   ![][image25]
+   <video
+      src="/case-study/videos/Writing_to_DB.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
 </figure>
 
 While this method ensures data consistency, the resulting latency and resource strain make it less suited for realtime applications where immediate responsiveness is optimal.
@@ -399,13 +449,22 @@ We implemented a queue system between the servers and the database, using AWS Si
 - **Resilience:** If the database fails temporarily, the queue holds data until it's ready, minimizing data loss risk.
 - **Eventual Consistency:** While not immediately consistent, the queue ensures all data is eventually processed, preserving integrity.
 
-# Insert Austin's new gif here
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Writing_to_Queue.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+</figure>
 
 When a client sends data to Cerebellum servers, the server will immediately timestamp the message and send it to the queue. The server continues to process the request without waiting for a confirmation from the database. When the message reaches the front of the queue, a serverless function will process the message and save it to the database. If the database write fails, the queue can retry the operation or save the data in the dead-letter queue—a special queue where undeliverable or failed messages are sent, allowing developers to analyze and fix issues. This ensures data is not lost.
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_DB_and_Queue.png.png"
+      src="/case-study/photos/buildingCB_DB_and_Queue.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
@@ -462,7 +521,7 @@ It is important to remove data that is not being used in DynamoDB to save on cos
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_ArchivingData.png"
+      src="/case-study/photos/buildingCB_ArchivingData.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
@@ -482,7 +541,7 @@ AWS Lambda complements the API Gateway by enabling serverless execution of code 
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/buildingCB_APIGateway.png"
+      src="/case-study/photos/buildingCB_APIGateway.png"
       className="diagram"
       alt="Architecture Diagram with API Gateway"
    />
@@ -508,7 +567,7 @@ Our WebSocket server uses Socket.io to initialize session connections, where a s
 
 <figure className="image-container">
    <img 
-      src="/img/case-study/photos/ConnectionStateRecovery_WSHandshake.jpg"
+      src="/case-study/photos/ConnectionStateRecovery_WSHandshake.jpg"
       className="diagram"
       alt="WebSocket Connection Handshake"
       width="30%"/> 
@@ -526,28 +585,29 @@ With only one container running, this handshake process can occur without compli
 
 <figure className="image-container">
    <video
-      src="/img/case-study/videos/StickySession_Bad.mp4"
+      src="/case-study/videos/StickySession_Bad.mp4"
       loop
       autoPlay
       muted
       playsInline
-      className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+      className="rounded-lg "
       
    > </video>
-   <figcaption align="center">Figure 5.2: Sticky Sessions Not Enabled</figcaption>
+   <figcaption align="center">Figure 5.2: Connecting without Sticky Sessions Enabled</figcaption>
 </figure>
 
 To solve this problem, we implemented “sticky sessions” by generating a cookie with the AWS load balancer and attaching it to each client request. Each subsequent request will receive a cookie in the response and include that cookie value in its request header. The load balancer will forward each request with a recognized cookie to the same server that initially handled it, bypassing the default algorithm. This ensures that the WebSocket connection is created between the associated server and the client.
 
 <figure className="image-container">
    <video
-      src="/img/case-study/videos/StickySession_Good.mp4"
+      src="/case-study/videos/StickySession_Good.mp4"
       loop
       autoPlay
       muted
       playsInline
-      className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+      className="rounded-lg "
    > </video>
+   <figcaption align="center">Figure 5.3: Connecting with Sticky Sessions Enabled</figcaption>
 </figure>
 
 ### Connection State Recovery
@@ -560,13 +620,14 @@ In practice, when the client detects a lost connection with the server, it will 
 
 <figure className="image-container">
    <video
-      src="/img/case-study/videos/Connection_State_Recovery.mp4"
+      src="/case-study/videos/Connection_State_Recovery.mp4"
       loop
       autoPlay
       muted
       playsInline
-      className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+      className="rounded-lg "
    > </video>
+   <figcaption align="center">Figure 5.4: Connection State Recovery</figcaption>
 </figure>
 
 An added benefit of this process is that upon disconnection, the client will also store any messages that have failed to send. Upon recovery, it will immediately send all buffered messages to the server.
@@ -581,8 +642,6 @@ A unique API key is generated with AWS Secrets when the servers are first create
 
 We recommend using Cerebellum SDK to generate a short-lived token using your API key upon user authentication. This process ensures that the API key remains secure on your login servers and is not exposed to clients or external parties.
 
-← **Gif to show steps** →
-
 Cerebellum takes the following steps to secure its servers:
 
 1. **Token Generation:**  
@@ -593,6 +652,37 @@ Cerebellum takes the following steps to secure its servers:
    The WebSocket server verifies the token using the API key stored in an environment variable, without needing to query the main database, boosting performance and scalability.
 4. **Handling Authentication Failures:**  
    If the token is missing or invalid, the user is denied the connection, preventing unauthorized access and helping protect against DDoS attacks.
+
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/auth_bad_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className=" w-full rounded-lg"
+         > 
+         </video>
+      </div>
+      <figcaption align="center"></figcaption>
+      </figure>
+      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+         <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+            src="/case-study/videos/auth_good_cropped.mp4"
+            loop
+            autoPlay
+            muted
+            playsInline
+            className="flex-grow w-full rounded-lg"
+            > 
+         </video>
+         </div>
+      <figcaption align="center"></figcaption>
+      </figure>
+</div>
 
 By implementing this token-based authentication solution, the WebSocket servers can manage connections securely and efficiently while maintaining high performance and scalability. This approach protects the integrity of the server and ensures that only authorized users can interact with your applications.
 
@@ -640,10 +730,13 @@ One approach when auto-scaling in ECS is to scale horizontally when the CPU or m
 
 Results:
 
-|        | Max       | Baseline % | Peak % | Difference % |
-| :----- | :-------- | :--------- | :----- | :----------- |
-| CPU    | 0.25 vCPU | 0.8%       | 12.4%  | \+11.6%      |
-| Memory | 0.5 GB    | 8.5%       | 11.0%  | \+2.5%       |
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/limit_of_concurrent_idle_users.jpg"
+      className="diagram"
+      alt="Architecture Diagram with API Gateway"
+   />
+</figure>
 
 #### 2\) Limit of Concurrent Active Users
 
@@ -652,10 +745,13 @@ Results:
 
 Results:
 
-|        | Max       | Baseline % | Peak % | Difference % |
-| :----- | :-------- | :--------- | :----- | :----------- |
-| CPU    | 0.25 vCPU | 0.8%       | 12.0%  | \+11.2%      |
-| Memory | 0.5 GB    | 8.0%       | 11.3%  | \+3.3%       |
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/limit_of_concurrent_active_users.jpg"
+      className="diagram"
+      alt="Architecture Diagram with API Gateway"
+   />
+</figure>
 
 #### Calculations
 
