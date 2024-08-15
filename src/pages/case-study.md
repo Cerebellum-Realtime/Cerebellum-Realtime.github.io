@@ -532,8 +532,9 @@ With only one container running, this handshake process can occur without compli
       muted
       playsInline
       className="rounded-lg shadow-[0_0_10px_grey] dark:shadow-none"
+      
    > </video>
-   <figcaption align="center">Figure 5.2: No sticky sessions</figcaption>
+   <figcaption align="center">Figure 5.2: Sticky Sessions Not Enabled</figcaption>
 </figure>
 
 To solve this problem, we implemented “sticky sessions” by generating a cookie with the AWS load balancer and attaching it to each client request. Each subsequent request will receive a cookie in the response and include that cookie value in its request header. The load balancer will forward each request with a recognized cookie to the same server that initially handled it, bypassing the default algorithm. This ensures that the WebSocket connection is created between the associated server and the client.
