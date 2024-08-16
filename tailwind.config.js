@@ -20,6 +20,11 @@ module.exports = {
         "6xl": "2880px",
       },
       colors: {
+        left: "#0FABFF",
+        middle: "#4A4AED",
+        // right: "#ad1acb",
+        right: "#AE24E0",
+        accent: "#D2EAFE",
         cerebellumPink: {
           100: "#f7d2ff",
           200: "#efa6ff",
@@ -75,6 +80,7 @@ module.exports = {
           800: "#302d66",
           900: "#181733",
         },
+        palePurple: "#F1E4F3",
       },
     },
   },

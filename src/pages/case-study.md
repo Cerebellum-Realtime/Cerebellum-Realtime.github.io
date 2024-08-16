@@ -16,7 +16,7 @@ Alongside our ready-made infrastructure, we offer a Software Development Kit (SD
 
 <figure className="image-container">
    <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Infrastructure" width="85%"/> 
-   <figcaption align="center">Figure 1.1: Cerebellum's Infrastructure</figcaption>
+   <figcaption align="center">Cerebellum's Complete Infrastructure</figcaption>
 </figure>
 
 ## Background: Realtime
@@ -27,27 +27,22 @@ Realtime applications are divided into two main categories, each with distinct t
 
 ### Realtime Categories
 
-#### Hard Realtime
+**Hard realtime** applications demand absolute performance where timing is crucial, and deadlines **must** be met without exception. Missing a deadline in a hard realtime system can lead to total system failure and catastrophic consequences, often involving safety hazards or physical damage. The importance of a task is directly tied to meeting its deadline; missing it can render the task's value null. Examples of such systems include emergency medical devices, industrial automation systems, and flight control systems.
 
-Hard realtime applications demand absolute performance where timing is crucial, and deadlines **must** be met without exception. Missing a deadline in a hard realtime system can lead to total system failure and catastrophic consequences, often involving safety hazards or physical damage. The importance of a task is directly tied to meeting its deadline; missing it can render the task's value null. Examples of such systems include emergency medical devices, industrial automation systems, and flight control systems.
+In **soft realtime** applications, missing a deadline results in a degradation of service quality, which can negatively impact user experience and be quite frustrating. However, it does not lead to system failure or significant harm. The value of a task is somewhat correlated with meeting the deadline—if missed, the value decreases but does not become null. Examples of soft realtime systems include messaging apps, online multiplayer games, and collaborative editors. _Cerebellum is designed specifically for soft realtime applications._
 
-<figure className="image-container ">
-   <img src="/case-study/photos/Hard_Realtime.png" className="diagram" alt="Hard Realtime" width="30%"/>  <
-   <figcaption align="center">Figure 2.1: Hard Realtime</figcaption>
-</figure>
+<div className="flex flex-row multi-image-container">
+   <figure className="image-container flex-1 flex-grow">
+      <img src="/case-study/photos/Hard_Realtime.png" className="diagram" alt="Hard Realtime" width="60%"/>  
+      <figcaption align="center">Hard Realtime</figcaption>
+   </figure>
+   <figure className="image-container flex-1 flex-grow">
+      <img src="/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="60%"/> 
+      <figcaption align="center">Hard Realtime</figcaption>
+   </figure>
+</div>
 
-#### Soft Realtime
-
-In soft realtime applications, missing a deadline results in a degradation of service quality, which can negatively impact user experience and be quite frustrating. However, it does not lead to system failure or significant harm. The value of a task is somewhat correlated with meeting the deadline—if missed, the value decreases but does not become. Examples of soft realtime systems include messaging apps, online multiplayer games, and collaborative editors.
-
-<figure className="image-container">
-   <img src="/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="30%"/> 
-   <figcaption align="center">Figure 2.2: Soft Realtime</figcaption>
-</figure>
-
-Identifying which category your application falls into helps set appropriate expectations and informs design decisions, which can differ significantly. _Cerebellum is designed specifically for soft realtime applications._
-
-Building on this foundation, we can examine key techniques and technologies that facilitate realtime communication between client applications and servers.
+Before we dive deeper into Cerebellum, we need to review a few key techniques and technologies for building realtime web applications.
 
 ### Realtime Techniques & Technologies
 
@@ -55,21 +50,21 @@ Building on this foundation, we can examine key techniques and technologies that
 
 <figure className="image-container">
    <img src="/case-study/photos/ShortPolling_Diagram.png" className="diagram" alt="Short Polling" width="30%"/> 
-   <figcaption align="center">Figure 2.3: Short Polling</figcaption>
+   <figcaption align="center">Short Polling</figcaption>
 </figure>
 
 **Long polling** improves on this by keeping the connection open until new data arrives, reducing redundant requests. However, it still requires the client to initiate each new request, which can lead to occasional synchronization issues.
 
 <figure className="image-container">
    <img src="/case-study/photos/LongPolling_Diagram.png" className="diagram" alt="Long Polling" width="30%"/> 
-   <figcaption align="center">Figure 2.4: Long Polling</figcaption>
+   <figcaption align="center">Long Polling</figcaption>
 </figure>
 
 **Server-Sent Events** (SSEs) further optimize this process by maintaining an open connection where the server continuously pushes updates to the client as they become available, eliminating the need for repeated requests and minimizing latency.
 
 <figure className="image-container">
    <img src="/case-study/photos/SSE_Diagram.png" className="diagram" alt="Server-Sent Events" width="30%"/> 
-   <figcaption align="center">Figure 2.5: Server-Sent Events</figcaption>
+   <figcaption align="center">Server-Sent Events</figcaption>
 </figure>
 
 While SSEs are efficient for one-way updates, they do not allow the client to send data back to the server in the same connection. This is where WebSockets excel.
@@ -80,28 +75,27 @@ The **WebSocket** protocol offers full-duplex communication over a single long-l
 
 <figure className="image-container">
    <img src="/case-study/photos/WebSocket_Diagram1.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
-   <figcaption align="center">Figure 2.6: WebSocket Connection</figcaption>
+   <figcaption align="center">WebSocket Connection</figcaption>
 </figure>
+
+However, WebSockets are complex to set up and manage due to their persistent connection and stateful nature. WebSockets require both browser and server-side support, but their long-standing presence means they are widely compatible across platforms. Additionally, WebSockets suffer from head-of-line blocking, where delays in one message can impact the delivery of subsequent messages.
 
 #### WebTransport
 
 The WebTransport API is an emerging technology that offers a promising alternative to WebSockets. WebTransport utilizes multiplexed streams and datagrams over HTTP/3 and the QUIC protocol. This setup allows multiple data streams to function independently within the same connection, reducing latency and avoiding head-of-line blocking—a problem in single-stream systems like WebSockets where delays in one packet can affect all subsequent packets. WebTransport’s capabilities make it particularly effective for handling numerous simultaneous realtime data exchanges, such as video streaming or complex online games.
 
-However, WebTransport is still in development and lacks support across all browsers. In contrast, WebSockets were established in the early 2010s and are supported by a robust, active community.
-
-#### Conclusion
-
-We determined that WebSockets are the most suitable for our focus and application. Although each option offers unique advantages, WebSockets excel in providing instantaneous bi-directional communication and are well-established with broad browser support.
+However, WebTransport is still in development and lacks support across all browsers. It also requires server-side support, which is not yet as widely available as WebSocket support.
 
 <figure className="image-container">
    <img src="/case-study/photos/CommunicationComparisonChart.png" className="diagram" alt="Realtime Comparison Chart" width="60%"/> 
-   <figcaption align="center">Figure 2.7: Realtime Techniques & Technologies</figcaption>
+   <figcaption align="center">Realtime Techniques & Technologies</figcaption>
 </figure>
-However, WebSockets come with distinct complexities, particularly when it comes to scaling.
+
+We determined that WebSockets are the most suitable for our focus and application. However, WebSockets come with distinct complexities, particularly when it comes to scaling.
 
 ### Scaling WebSocket Applications is Not Trivial
 
-Scaling _any_ type of application requires vertical scaling, horizontal scaling, or some combination thereof. Vertical scaling involves adding more power to a single server, while horizontal scaling spreads the load across multiple servers.
+Scaling web applications typically involves vertical scaling, horizontal scaling, or some combination thereof. Vertical scaling involves adding more power to a single server, while horizontal scaling spreads the load across multiple servers.
 
 <div className="flex justify-center video-container">
    <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
@@ -116,31 +110,31 @@ Scaling _any_ type of application requires vertical scaling, horizontal scaling,
          > 
          </video>
       </div>
-      <figcaption align="center">Figure 2.8: Vertical Scaling</figcaption>
-      </figure>
-      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
-         <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
-         <video
-            src="/case-study/videos/horizontal_scaling_cropped.mp4"
-            loop
-            autoPlay
-            muted
-            playsInline
-            className="flex-grow w-full rounded-lg"
-            > 
-         </video>
-         </div>
-      <figcaption align="center">Figure 2.9: Horizontal Scaling</figcaption>
-      </figure>
+      <figcaption align="center">Vertical Scaling</figcaption>
+   </figure>
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+      <video
+         src="/case-study/videos/horizontal_scaling_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className="flex-grow w-full rounded-lg"
+         > 
+      </video>
+      </div>
+      <figcaption align="center">Horizontal Scaling</figcaption>
+   </figure>
 </div>
 
 Scaling realtime WebSocket applications comes with an additional set of unique challenges. It’s helpful to use HTTP-based applications as a benchmark to understand these challenges.
 
 #### Challenges with State
 
-One of the main differences between HTTP-based applications and WebSocket applications relates to state. In an HTTP interaction, the client initiates a request to the server, which processes the request and sends back a response, after which the connection is terminated. This type of communication is considered stateless because each request is independent and doesn’t rely on information from previous interactions. Because HTTP-based applications are stateless, any server can handle any request, making horizontal scaling straightforward.
+One of the main differences between HTTP-based applications and WebSocket applications relates to state. In an HTTP interaction, the client initiates a request to the server, which processes the request and sends back a response, after which the connection is terminated. This type of communication is considered stateless because each request is independent and doesn’t rely on information from previous interactions. Because HTTP-based applications are stateless, any server can handle any request, making horizontal scaling more straightforward.
 
-In contrast, WebSocket applications keep a persistent connection, meaning that the server must maintain state information for each connection. This complicates scaling, as multiple servers must share and synchronize this state to maintain data consistency across the application. For instance, if two users are connected to different servers, additional infrastructure is needed to ensure they can still communicate seamlessly.
+WebSocket applications differ by maintaining an ongoing connection between the client and server, requiring each server to manage the session state and route messages accordingly. This continuity complicates scaling, as servers need to coordinate which clients are connected to them. Unlike HTTP, WebSockets require more infrastructure to maintain these persistent connections.
 
 <div className="flex justify-center video-container">
    <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
@@ -155,9 +149,9 @@ In contrast, WebSocket applications keep a persistent connection, meaning that t
          > 
          </video>
       </div>
-      <figcaption align="center">Figure 2.8: Vertical Scaling</figcaption>
-      </figure>
-      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <figcaption align="center">Single Server Managing Connection State</figcaption>
+   </figure>
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
       <video
          src="/case-study/videos/client_server_msg_lost_cropped.mp4"
          loop
@@ -166,80 +160,44 @@ In contrast, WebSocket applications keep a persistent connection, meaning that t
          playsInline
          className="flex-grow w-full rounded-lg"
          > </video>
-      <figcaption align="center">Figure 2.9: Horizontal Scaling</figcaption>
-      </figure>
+      <figcaption align="center">Multiple Servers without Infrastructure for Connection State Management</figcaption>
+   </figure>
 </div>
 
 #### Challenges with Performance
 
-Servers managing WebSocket connections face a heavier workload than those dealing with standard HTTP requests. Unlike HTTP, where connections are transient, WebSockets require the server to maintain ongoing, persistent connections while simultaneously handling new connection requests. This dual responsibility significantly increases resource consumption, particularly for memory and CPU. This can lead to performance degradation and a poor user experience if not managed properly.
+Servers managing WebSocket connections face a heavier workload than those handling standard HTTP requests. WebSockets’ ongoing connections increase resource consumption, especially memory and CPU. This can lead to performance issues and a poor user experience if not properly managed.
 
-A common approach might be to add realtime capabilities to an existing server that also handles non-realtime tasks. This creates a “tightly coupled” system, where both realtime and non-realtime components share the same infrastructure and resources. While this setup offers simplicity, especially for smaller applications, it introduces several risks as the application scales:
+Some applications add realtime features to existing servers that also handle non-realtime tasks. While simple, this "tightly coupled" approach introduces risks as the app scales:
 
-- **Performance Bottlenecks**: Shared resources can slow down both the realtime and non-realtime components.
-- **Different Scaling Needs**: Realtime and non-realtime components may require scaling at different rates, which is difficult to manage in a coupled system.
-- **Single Point of Failure**: A failure in the server can impact both components, increasing the likelihood of downtime.
+- **Performance Bottlenecks:** Shared resources can slow down both realtime and non-realtime tasks.
+- **Scaling Challenges:** Realtime and non-realtime components may need to scale differently, making management harder.
+- **Single Point of Failure:** A failure in the server affects both components, increasing downtime risks.
 
-Decoupling the realtime component from the non-realtime application is essential to mitigating these risks. By separating these systems, each can scale independently, allowing the realtime component to handle increased traffic without affecting the non-realtime part, and vice versa. This decoupling ensures that both performance and reliability are optimized, meeting the unique demands of scaling WebSocket applications.
+Decoupling the realtime and non-realtime components allows each to scale independently, improving performance and reliability as the application grows.
 
 #### Dedicated Realtime Infrastructure
 
 Scaling WebSocket applications effectively requires specialized infrastructure. However, sourcing, configuring, and maintaining such infrastructure can be a significant burden for developers, diverting attention away from core product development. A dedicated infrastructure for realtime communication not only alleviates these challenges but also ensures that both performance and state management are optimized for the unique demands of WebSocket applications.
 
-## Finding the Right Fit for Your Application
+## Cerebellum's Niche
 
-There are several different approaches when considering implementing your realtime application. It’s helpful to ground this topic in terms of effort, control, and flexibility as a relative measurement to understand the difference between the approaches we will outline.
+For teams with a core focus on realtime, DIY solutions like Node.js' WebSocket library or Socket.io offer complete control and flexibility over data and infrastructure. However, these solutions require significant effort to set up and maintain.
 
-- **Effort:** Labor required to set up and maintain your application.
-- **Control:** The degree to which you own your data and infrastructure.
-- **Flexibility:** The degree to which you can customize your application’s logic and infrastructure.
+If realtime isn't your core product, third-party solutions like Ably or PartyKit can simplify integration and reduce setup time. These services handle infrastructure and offer easy-to-use abstractions but provide less control over data and customization.
 
-The main solutions we’ll explore in this section are do-it-yourself (DIY), enterprise, and Cerebellum. Each solution has its own level of effort, control, and flexibility.
+Cerebellum bridges the gap for teams seeking a balance between low effort, high flexibility, and full control over their data.
 
-### DIY Solutions
+To help evaluate solutions, we considered several key attributes:
 
-<figure className="image-container">
-   <img src="/case-study/photos/GenericUserLogo.png" className="diagram" alt="DIY Logo" width="10%"/>
-</figure>
-
-Developer teams whose core product is realtime might want full control over their data, infrastructure, and logical abstractions. In this case, they might use a library like Node.js’ WebSocket library or Socket.io. They could also implement their own WebSocket API. Given realtime is the developer team’s main product offering in this scenario, dedicating significant time to this effort becomes justifiable.
-
-Implementing a DIY solution requires more effort than any other option. On the other hand, DIY allows for a high level of control because the developer has full control over their data and infrastructure. They can make their own design decisions and store their data however they see fit. Finally, DIY comes with the benefit of being completely customizable, and therefore has the highest level of flexibility.
-
-### Enterprise Solutions
-
-<figure className="image-container">
-   <img src="/case-study/photos/AblyLogo.png" className="diagram" alt="Ably Logo" width="10%"/> 
-</figure>
-
-The story changes if the developer team’s core product is not realtime. If a developer team doesn’t specialize in realtime and wants to add a realtime component to an existing product, they probably would not want to start from scratch. The time spent building a DIY solution would be better invested in working on their core product offering.
-
-They may look into a third-party solution like Ably or PartyKit. These options both handle infrastructure and provide easy-to-use abstractions for common realtime tasks. The downside is that there is still some legwork, such as integrating a database for handling data persistence. This option also forfeits control of infrastructure and data to the third-party service.
-
-Enterprise solutions require the lowest effort of choices we outline here. They allow you to hit the ground running with a realtime application in the shortest time. This does come with a trade-off. Enterprise solutions provide the lowest amount of control and flexibility. Developers forfeit direct management of their data to the enterprise provider. Also, enterprise solutions aren’t extendable. The developer is locked into whatever design decisions the enterprise solution implements. This provides very little flexibility.
-
-### Cerebellum
-
-<figure className="image-container">
-   <img src="/img/logo.png" className="diagram" alt="Cerebellum Logo" width="10%"/> 
-</figure>
-
-The options we’ve looked at so far sacrifice high control and flexibility in exchange for low effort. Neither of these solutions provides both low effort and high flexibility. We positioned Cerebellum to fit this gap in the market.
-
-We built Cerebellum for small to medium-sized development teams who want a realtime solution that handles infrastructure with strong support for data persistence, long-term storage, and an easy-to-use interface.
-
-### Comparing Solutions
-
-We chose eight comparison points for Ably, PartyKit, Cerebellum, and DIY:
-
-- **Data Persistence:** Out-of-the-box ability to store messages or data across sessions, ensuring that information is not lost.
-- **User Presence:** Tracking and reporting the status and user details in realtime applications.
-- **Open Source:** Indicates whether the software’s source code is available for anyone to inspect, modify, and enhance.
-- **Data Ownership:** Defines who owns and controls the data generated and stored by the application.
-- **Exactly Once Delivery:** Ensures that messages are delivered exactly once, which is critical for avoiding duplicates in certain applications.
-- **Auto Scaling:** Ability to automatically scale resources up or down based on application demand.
-- **Multi-Language Support:** Support for multiple programming languages, enabling developers to work in their preferred language.
-- **Cost:** The relative cost of using the service, assessed in terms of operational expenses for a typical use case.
+- **Data Persistence:** Duration and method of storing messages across sessions.
+- **User Presence:** Capability to track and report user status in real time.
+- **Open Source:** Availability of source code for inspection and modification.
+- **Data Ownership:** Control over the data generated and stored.
+- **Exactly Once Delivery:** Assurance that messages are delivered exactly once.
+- **Auto Scaling:** Ability to automatically adjust resources based on demand.
+- **Multi-Language Support:** Compatibility with different programming languages.
+- **Cost:** Overall expenses related to using and scaling the service.
 
 <figure className="image-container">
    <img
@@ -248,24 +206,22 @@ We chose eight comparison points for Ably, PartyKit, Cerebellum, and DIY:
       alt="Realtime Solution Comparison Chart"
       width="60%"
    />
-   <figcaption align="center">Figure 3.1: Comparing Solutions</figcaption>
+   <figcaption align="center">Comparing Solutions</figcaption>
 </figure>
 
 \*Ably stores all messages for two minutes out of the box, with an option to increase to 72 hours in their premium package. Longer data persistence requires a third-party solution.
 
-Equipped with this technical background and a deeper insight into the realtime market, we can now explore the specifics of Cerebellum and the design choices we implemented.
+Cerebellum is built for small to medium-sized development teams who want a realtime solution that handles infrastructure with strong support for data persistence, long-term storage, and an easy-to-use interface.
 
 ## Building Cerebellum’s Infrastructure
 
-We built Cerebellum to meet the demands of realtime applications with an ever-increasing user base. This required provisioning servers for horizontal scaling, ensuring our architecture could maintain performance and reliability as the number of WebSocket connections increased.
+Cerebellum was built with scaling in mind. This required provisioning servers for horizontal scaling, ensuring our architecture could maintain performance and reliability as the number of WebSocket connections increased.
 
 The [CAP theorem](https://www.ibm.com/topics/cap-theorem) highlights a fundamental trade-off in distributed systems: they can prioritize either availability or consistency, but not both simultaneously. Availability ensures that data requests always receive a response, even if parts of the system fail. Consistency guarantees that all clients see the same data, which can sometimes come at the expense of longer load times.
 
 Since Cerebellum is designed for soft realtime applications, we prioritize availability over consistency.
 
-Our architecture was built with this prioritization in mind. We chose AWS as our preferred platform to host the infrastructure, due to its extensive service offerings and [dominant market share](https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/) among cloud providers.
-
-Given Cerebellum's broad applicability to realtime applications, our architecture must support a wide range of realtime application needs, from chat applications to collaborative editing to gaming platforms. This versatility demands a flexible infrastructure. In the following sections, we will explore the specific components and design choices that form Cerebellum’s architecture, illustrating how each element contributes to performance, reliability, and scalability.
+We chose AWS as our preferred platform to host the infrastructure, due to its extensive service offerings and [dominant market share](https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/) among cloud providers.
 
 ### Establishing a Connection on a Single Server
 
@@ -275,23 +231,19 @@ We initially built our infrastructure with a single WebSocket server, allowing u
    <img 
       src="/case-study/photos/buildingCB_OneServer.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of clients connecting to a single server"
       width="35%"
    />
-   <figcaption align="center">Figure 4.1: Single-Server Connections</figcaption>
+   <figcaption align="center">Single-Server Connections</figcaption>
 </figure>
 
-However, as traffic on this one server increases, computing resources will eventually reach their upper limit. This will increase the latency of the server’s response time and cause the server to crash if more resources are not allocated. Moreover, relying on a single server introduces a single point of failure.
+We hosted our WebSocket application on a server with 0.25 vCPU and 0.5 GB of RAM. When we exceeded 4,000 concurrent users, CPU utilization was nearing 70%, which is AWS’s recommended threshold for scaling. Beyond this point, server response times could increase, and the risk of crashes becomes higher without additional resources. Moreover, relying on a single server introduces a single point of failure.
 
 ### Scaling Complexities with Multiple Servers
 
-As user traffic and server load grow, the infrastructure must adapt in real time. Making our infrastructure horizontally scalable allowed for dynamic scaling but also introduced complexities and trade-offs.
-
 #### Scalable Servers
 
-The first step to this was to replace our single application server with a dynamically scalable one to build a horizontally scalable architecture.
-
-Our solution was to use AWS Elastic Container Service (ECS) with AWS Fargate. Containers are lightweight, portable units that package an application and its dependencies. These containers are created from images, which are snapshots of the application environment, including the code, libraries, and system settings.
+We used AWS Elastic Container Service (ECS) with AWS Fargate to set up our infrastructure for horizontal scaling. Containers are lightweight, portable units that package an application and its dependencies. These containers are created from images, which are snapshots of the application environment, including the code, libraries, and system settings.
 
 ECS is an orchestrator—it manages the number of containers running at any given time. ECS monitors server load and decides when to scale up or down accordingly. Fargate is a compute engine that eliminates the need to provision and manage servers by creating serverless containers on demand. It allows us to define a Docker or Elastic Container Registry image (our WebSocket server by default) and creates a container with a pre-specified operating system.
 
@@ -299,13 +251,13 @@ ECS is an orchestrator—it manages the number of containers running at any give
    <img 
       src="/case-study/photos/buildingCB_ECSCluster.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of two clients connecting to a cluster of servers"
       width="45%"
    />
-   <figcaption align="center">Figure 4.2: ECS Connections</figcaption>
+   <figcaption align="center">Multi-Server Connections</figcaption>
 </figure>
 
-While our infrastructure could now automatically scale based on user load, users connected to different servers couldn't communicate with each other. Each server maintained its own isolated state and connection data. As a result, a user connected to one server wouldn't be able to reach a user connected to a different server. This isolation severely impacted the realtime communication functionality of our application, which relied on consistent message delivery across all clients regardless of their server connection.
+While our infrastructure could now automatically scale based on user load, users connected to different servers couldn't communicate with each other. Each server maintained its own isolated state and connection data. As a result, a user connected to one server wouldn't be able to reach a user connected to a different server.
 
 We needed a way for data to allow data flow and consistency between our servers. We implemented a pub/sub to facilitate this cross-server communication.
 
@@ -317,11 +269,11 @@ Publish/Subscribe (Pub/Sub) is a messaging pattern used in distributed systems t
 - **Subscribers** are users or systems that receive notifications when a message is sent to a channel they follow.
 - **Publishers** are users or systems that send messages to channels.
 
-In the pub/sub model, publishers and subscribers are decoupled. Publishers can send messages to channels without needing to know who the subscribers are, and subscribers receive messages without knowing who the publishers are. This decoupling enables scalable and flexible architectures, allowing components to be added, removed, or modified independently.
+In the pub/sub model, publishers and subscribers are decoupled. Publishers can send messages to channels without needing to know who the subscribers are, and subscribers receive messages without knowing who the publishers are.
 
 By implementing a pub/sub system, when a user sends a message to a server, it is received by the pub/sub system and forwarded to all subscribers of that channel, regardless of which server they are connected to. This ensures that all users receive the same information in real time, overcoming the challenges of server isolation and ensuring consistent message delivery across multiple servers.
 
-<figure className="flex justify-center">
+<figure className="image-container">
    <video
       src="/case-study/videos/ChannelsPubSub.mp4"
       loop
@@ -329,13 +281,13 @@ By implementing a pub/sub system, when a user sends a message to a server, it is
       muted
       playsInline
       className="rounded-lg "
-> </video>
-
+   > </video>
+   <figcaption align="center">Illustration of a User Posting a Message to a Channel</figcaption>
 </figure>
 
 #### Redis Streams as Our Pub/Sub System
 
-For our pub/sub system, we leveraged the capabilities of AWS ElastiCache for Redis, specifically utilizing Redis Streams. While Redis is often known for its key/value cache functionality, it also offers powerful features for building robust pub/sub systems.
+For our pub/sub system, we used AWS ElastiCache for Redis, specifically utilizing Redis Streams. While Redis is often known for its key/value cache functionality, it also offers powerful features for building robust pub/sub systems.
 
 Redis Streams provides an append-only log data structure that supports more complex pub/sub scenarios. Key advantages include:
 
@@ -355,6 +307,7 @@ In our Redis Streams implementation, the message flow differs slightly from trad
       playsInline
       className="rounded-lg "
    > </video>
+   <figcaption align="center">Illustration of Servers Reading a New Message from Redis Streams</figcaption>
 </figure>
 
 With our Redis Streams-based pub/sub system in place, we had to establish a single, secure public entry point while balancing load across multiple servers.
@@ -363,8 +316,10 @@ With our Redis Streams-based pub/sub system in place, we had to establish a sing
    <img 
       src="/case-study/photos/buildingCB_Elasticache.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of multiple clients connecting to a cluster of servers using Redis Streams as a pub/sub system"
+      width="60%"
    />
+   <figcaption align="center">Multi-Server Connections with Redis Streams</figcaption>
 </figure>
 
 #### Balancing the Load Distribution
@@ -389,8 +344,10 @@ By handling these tasks, the ALB solved a crucial part of our infrastructure nee
    <img 
       src="/case-study/photos/buildingCB_LoadBalancer.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of a load balancer routing traffic to multiple servers"
+      width="60%"
    />
+   <figcaption align="center">Cerebellum's Infrastructure with an Application Load Balancer</figcaption>
 </figure>
 
 ### Persisting Data in a Realtime Application
@@ -403,7 +360,7 @@ At this stage, our architecture successfully provided realtime scaling and commu
 
 <figure className="image-container">
    <video
-      src="/case-study/videos/Connection_State_Recovery.mp4"
+      src="/case-study/videos/MessageHistory.mp4"
       loop
       autoPlay
       muted
@@ -411,6 +368,7 @@ At this stage, our architecture successfully provided realtime scaling and commu
       className="rounded-lg "
    > </video>
 </figure>
+<figcaption align="center">Illustration of a Communication App without Data Persistence</figcaption>
 
 #### Choosing the Right Database for Realtime Applications
 
@@ -437,14 +395,15 @@ Direct communication between servers and databases in a realtime environment is 
       playsInline
       className="rounded-lg "
    > </video>
+   <figcaption align="center">Strong Consistency System: Writing Data to a Database</figcaption>
 </figure>
 
 While this method ensures data consistency, the resulting latency and resource strain make it less suited for realtime applications where immediate responsiveness is optimal.
 
 We implemented a queue system between the servers and the database, using AWS Simple Queue Services and AWS Lambda. This approach offers several key benefits:
 
-- **Decoupling:** The queue buffers operations, letting the real-time server respond to clients without waiting for the database, ensuring quick responses.
-- **Responsiveness:** Servers can process and acknowledge client requests promptly, meeting real-time app expectations.
+- **Decoupling:** The queue buffers operations, letting the realtime server respond to clients without waiting for the database, ensuring quick responses.
+- **Responsiveness:** Servers can process and acknowledge client requests promptly, meeting realtime app expectations.
 - **Managed Load:** The queue controls data flow to the database, preventing performance issues from sudden write bursts.
 - **Resilience:** If the database fails temporarily, the queue holds data until it's ready, minimizing data loss risk.
 - **Eventual Consistency:** While not immediately consistent, the queue ensures all data is eventually processed, preserving integrity.
@@ -458,6 +417,7 @@ We implemented a queue system between the servers and the database, using AWS Si
       playsInline
       className="rounded-lg "
    > </video>
+   <figcaption align="center">Strong Availability System: Writing Data to a Queue</figcaption>
 </figure>
 
 When a client sends data to Cerebellum servers, the server will immediately timestamp the message and send it to the queue. The server continues to process the request without waiting for a confirmation from the database. When the message reaches the front of the queue, a serverless function will process the message and save it to the database. If the database write fails, the queue can retry the operation or save the data in the dead-letter queue—a special queue where undeliverable or failed messages are sent, allowing developers to analyze and fix issues. This ensures data is not lost.
@@ -466,8 +426,10 @@ When a client sends data to Cerebellum servers, the server will immediately time
    <img 
       src="/case-study/photos/buildingCB_DB_and_Queue.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of saving data to a database using a queue"
+      width="60%"
    />
+   <figcaption align="center">Cerebellum's Infrastructure Enabling Availability with Eventual Consistency</figcaption>
 </figure>
 
 This approach allowed us to prioritize availability while maintaining eventual consistency. Although there is a slight delay in data persistence, this trade-off is minor compared to the performance gains. Overall, DynamoDB’s fast, flexible nature proved to be an excellent choice for handling realtime workloads, even under heavy traffic. However, as data grows over time, the cost of storing vast amounts of information in DynamoDB increases significantly. To address this, we implemented a long-term solution for managing historical data without sacrificing performance or inflating costs.
@@ -523,8 +485,10 @@ It is important to remove data that is not being used in DynamoDB to save on cos
    <img 
       src="/case-study/photos/buildingCB_ArchivingData.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration of a cron job archiving data from DynamoDB to S3"
+      width="60%"
    />
+   <figcaption align="center">Cerebellum's Infrastructure Enabling Data Archiving</figcaption>
 </figure>
 
 ### HTTP Endpoint
@@ -543,8 +507,10 @@ AWS Lambda complements the API Gateway by enabling serverless execution of code 
    <img 
       src="/case-study/photos/buildingCB_APIGateway.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Illustration showing an API gateway with a lambda function"
+      width="60%"
    />
+   <figcaption align="center">Cerebellum's Infrastructure Including a Dedicated HTTP Gateway</figcaption>
 </figure>
 
 The addition of HTTP endpoints alongside WebSocket connections expands the functionality and flexibility of our system. Key use cases for HTTP endpoints:
@@ -557,6 +523,13 @@ The addition of HTTP endpoints alongside WebSocket connections expands the funct
 
 Modern applications frequently interact with diverse systems and services, often across various languages and frameworks. REST APIs make this integration straightforward, using standard HTTP methods (GET, POST) and widely supported data formats (JSON). This approach simplifies connecting our DynamoDB database and servers with other services, ensuring smoother and more efficient data interactions.
 
+### Final Architecture
+
+<figure className="image-container">
+   <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Final Infrastructure" width="85%"/> 
+   <figcaption align="center">Cerebellum's Complete Infrastructure</figcaption>
+</figure>
+
 ## Realtime Engineering Challenges
 
 We had a fully formed architecture by this point, but we still needed to handle some of the common realtime application challenges.
@@ -565,21 +538,21 @@ We had a fully formed architecture by this point, but we still needed to handle 
 
 Our WebSocket server uses Socket.io to initialize session connections, where a session is defined as a persistent WebSocket connection between the client and the server. The process of initializing a session connection is as follows:
 
-<figure className="image-container">
-   <img 
-      src="/case-study/photos/WebSocket_Diagram.png"
-      className="diagram"
-      alt="WebSocket Connection Handshake"
-      width="30%"/> 
-   <figcaption align="center">Figure 5.1: WebSocket Connection Handshake</figcaption>
-</figure>
-
 1. The client sends an HTTP GET request to the server with \`transport=polling\` in its query parameters.
 2. The server responds with a session ID, an array of possible transport upgrades, and other connection-related information.
    1. The session ID is used by the server to identify the client and manage the connection.
    2. The list of upgrades typically includes WebSocket as the more efficient and preferred transport method.
 3. The client will then attempt to set up HTTP long-polling as a default first option.
 4. The client will then attempt to upgrade the connection to a WebSocket connection by making a GET request with \`transport=websocket\` in the query parameters.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/WebSocket_Diagram.png"
+      className="diagram"
+      alt="WebSocket Connection Handshake"
+      width="25%"/> 
+   <figcaption align="center">WebSocket Connection Detailed Illustration</figcaption>
+</figure>
 
 With only one container running, this handshake process can occur without complications. A potential problem arises when we introduce a second container and a load balancer. Due to the multiple round-trip nature of establishing a WebSocket connection, a user may be routed to a container that did not create the ID and thus will not recognize it.
 
@@ -591,9 +564,8 @@ With only one container running, this handshake process can occur without compli
       muted
       playsInline
       className="rounded-lg "
-      
    > </video>
-   <figcaption align="center">Figure 5.2: Connecting without Sticky Sessions Enabled</figcaption>
+   <figcaption align="center">Failed WebSocket Connection to a Multi-Server Application without Sticky Sessions</figcaption>
 </figure>
 
 To solve this problem, we implemented “sticky sessions” by generating a cookie with the AWS load balancer and attaching it to each client request. Each subsequent request will receive a cookie in the response and include that cookie value in its request header. The load balancer will forward each request with a recognized cookie to the same server that initially handled it, bypassing the default algorithm. This ensures that the WebSocket connection is created between the associated server and the client.
@@ -607,7 +579,7 @@ To solve this problem, we implemented “sticky sessions” by generating a cook
       playsInline
       className="rounded-lg "
    > </video>
-   <figcaption align="center">Figure 5.3: Connecting with Sticky Sessions Enabled</figcaption>
+   <figcaption align="center">Successful WebSocket Connection to a Multi-Server Application with Sticky Sessions Enabled</figcaption>
 </figure>
 
 ### Connection State Recovery
@@ -627,7 +599,7 @@ In practice, when the client detects a lost connection with the server, it will 
       playsInline
       className="rounded-lg "
    > </video>
-   <figcaption align="center">Figure 5.4: Connection State Recovery</figcaption>
+   <figcaption align="center">Connection State Recovery</figcaption>
 </figure>
 
 An added benefit of this process is that upon disconnection, the client will also store any messages that have failed to send. Upon recovery, it will immediately send all buffered messages to the server.
@@ -666,7 +638,7 @@ Cerebellum takes the following steps to secure its servers:
          > 
          </video>
       </div>
-      <figcaption align="center"></figcaption>
+      <figcaption align="center">Failed Attempt to Connect</figcaption>
       </figure>
       <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
          <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
@@ -680,7 +652,7 @@ Cerebellum takes the following steps to secure its servers:
             > 
          </video>
          </div>
-      <figcaption align="center"></figcaption>
+      <figcaption align="center">Successful Attempt to Connect</figcaption>
       </figure>
 </div>
 
@@ -698,15 +670,47 @@ ElastiCache with Redis OSS is an ideal solution for managing presence informatio
 
 By leveraging Redis as our single source for presence information, we can synchronize presence data across all servers. When a user joins, leaves, or updates their presence information, the changes are immediately reflected in Redis, which is accessible by all servers in the cluster. This update is then broadcasted via the pub/sub system, notifying all users subscribed to that presence channel, and providing a consistent source of presence information for all servers.
 
-**← Show presence in chat app –\>**
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Realtime User Presence</figcaption>
+</figure>
 
 #### How to Handle Disconnections
 
 A key challenge in building presence functionality is managing user disconnections. When a client disconnects, the server must notify other users in the presence channels, as the client can no longer update its status. This prevents stale data in the Redis cache and ensures presence information stays current.
 
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence_Disconnection_Bad.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">User Loses Connection but Presence is not Updated</figcaption>
+</figure>
+
 To address this, we assign a unique ID to each client connected to a server. This ID is stored in Redis along with a list of all that user’s presence channels. When a disconnection event is detected, the server automatically iterates through the list of that user’s presence channels and notifies the corresponding presence channel that the user has left. Lastly, the server removes the user’s presence information from the Redis cache to ensure it always has the most up-to-date information for everyone who joins.
 
-**← Diagram showing disconnection? –\>**
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence_Disconnection.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">User Loses Connection and Presence is Successfully Updated</figcaption>
+</figure>
 
 ## Load Testing
 
@@ -734,8 +738,10 @@ Results:
    <img 
       src="/case-study/photos/load_test_idle_user.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Load testing diagram for idle users"
+      width="70%"
    />
+   <figcaption align="center">Load Testing Results for Idle Users</figcaption>
 </figure>
 
 #### 2\) Limit of Concurrent Active Users
@@ -747,10 +753,12 @@ Results:
 
 <figure className="image-container">
    <img 
-      src="/case-study/photos/load_test_active_user.png"
+      src="/case-study/photos/load_test_active.png"
       className="diagram"
-      alt="Architecture Diagram with API Gateway"
+      alt="Load testing for active users"
+      width="70%"
    />
+<figcaption align="center">Load Testing Results for Active Users</figcaption>
 </figure>
 
 #### Calculations
