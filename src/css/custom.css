@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -6,37 +10,44 @@
 
 /* You can override the default Infima variables here. */
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap");
 
 :root {
-  --ifm-color-primary: #409935;
-  --ifm-color-primary-dark: #3a8a30;
-  --ifm-color-primary-darker: #36822d;
-  --ifm-color-primary-darkest: #2d6b25;
-  --ifm-color-primary-light: #46a83a;
-  --ifm-color-primary-lighter: #4ab03d;
-  --ifm-color-primary-lightest: #58c14b;
+  /* --ifm-color-primary: #7771fe; */
+  /* --ifm-color-primary: #564dfe; */
+  --ifm-color-primary: #342afe;
+  --ifm-color-primary-dark: #5f5acb;
+  --ifm-color-primary-darker: #474498;
+  --ifm-color-primary-darkest: #302d66;
+  --ifm-color-primary-light: #928dfe;
+  --ifm-color-primary-lighter: #adaafe;
+  --ifm-color-primary-lightest: #c9c6ff;
   --ifm-code-font-size: 95%;
-  --ifm-font-family-base: 'Roboto';
+  --ifm-font-family-base: "Roboto";
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #56cd47;
-  --ifm-color-primary-dark: #45c335;
-  --ifm-color-primary-darker: #41b832;
-  --ifm-color-primary-darkest: #369829;
-  --ifm-color-primary-light: #6ad35d;
-  --ifm-color-primary-lighter: #74d668;
-  --ifm-color-primary-lightest: #92df88;
+[data-theme="dark"] {
+  --ifm-color-primary: #10c7fe;
+  --ifm-color-primary-dark: #0d9fcb;
+  --ifm-color-primary-darker: #0a7798;
+  --ifm-color-primary-darkest: #065066;
+  --ifm-color-primary-light: #40d2fe;
+  --ifm-color-primary-lighter: #70ddfe;
+  --ifm-color-primary-lightest: #9fe9ff;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
+.selected {
+  color: #342afe;
+  border-bottom: 2px solid #342afe;
+}
+
+[data-theme="dark"] .selected {
+  color: #10c7fe;
+  border-bottom: 2px solid #10c7fe;
+}
 .portrait-img {
   border-radius: 50%;
 }
@@ -49,7 +60,9 @@ img {
 .fade-in-section {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
 }
 
 .fade-in-section.is-visible {
@@ -70,11 +83,11 @@ img {
   box-shadow: 100 100 300px white;
 }
 
-html[data-theme='dark'] .sectionA {
+html[data-theme="dark"] .sectionA {
   background-color: rgb(40, 42, 44);
 }
 
-html[data-theme='dark'] .sectionB {
+html[data-theme="dark"] .sectionB {
   background-color: rgb(26, 27, 27);
 }
 
@@ -94,6 +107,7 @@ figcaption {
 
 .diagram {
   border-radius: 10px;
+  background-color: white; /* Set background to white */
   /* border-bottom: solid #7c7995; */
   /* box-shadow: 0px 1px 10px rgba(124, 121, 149, 0.2); */
 }
@@ -103,27 +117,47 @@ figcaption {
 }
 
 video {
-  width: 100%;
+  width: 75%;
 }
 
-a[class*='footerLogoLink'] {
+a[class*="footerLogoLink"] {
   opacity: 1;
 }
 
-a[class*='footerLogoLink']:hover {
+a[class*="footerLogoLink"]:hover {
   opacity: 0.8;
 }
 
 @media (min-width: 997px) {
-  .col--2 {
-    --ifm-col-width: calc(3 / 12 * 100%);
+  .sidebar {
+    flex: 0 1 325px;
+    padding: 16px;
   }
 
   .col--8 {
-    --ifm-col-width: calc(6.5 / 12 * 100%);
-    margin-right: 100px;
-    margin-left: 100px;
     font-size: 18px;
+  }
+
+  .mobile-toc-container {
+    display: none;
+  }
+
+  .section-mobile {
+    gap: 64px;
+  }
+}
+
+@media (min-width: 1350px) {
+  .col--8 {
+    /* --ifm-col-width: calc(6.5 / 12 * 100%); */
+    margin-left: 80px;
+    font-size: 18px;
+    flex: 1;
+  }
+
+  .sidebar {
+    flex: 0 1 350px;
+    padding: 16px;
   }
 }
 
@@ -134,30 +168,111 @@ a[class*='footerLogoLink']:hover {
 
 div.col--8 article h1 {
   letter-spacing: -1px;
-  margin-top: 16px;
   font-size: 44px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 div.col--8 article h2 {
   letter-spacing: -1px;
   font-size: 32px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  margin-top: 24px;
 }
 
 div.col--8 article h3 {
   font-size: 24px;
   letter-spacing: -0.5px;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+  margin-top: 24px;
   line-height: 2.2rem;
 }
 
 div.col--8 article h4 {
   font-size: 20px;
-  margin-bottom: 22px;
+  margin-bottom: 8px;
+  margin-top: 24px;
 }
 
 .navbar__title {
-  text-transform: uppercase;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+}
+
+.table-of-contents__left-border {
+  border-left: none;
+  height: 100%;
+  border-right: 1px solid var(--ifm-toc-border-color);
+}
+
+.image-container {
+  margin: 0 auto; /* Center the entire figure horizontally */
+}
+
+@media (max-width: 997px) {
+  .image-container img {
+    margin: 0 auto; /* Center the entire figure horizontally */
+    width: 100%;
+  }
+
+  video {
+    width: 100%;
+  }
+
+  .scaling-gif {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+  .video-container {
+    flex-direction: column;
+    padding: 0px;
+  }
+
+  .multi-image-container {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .mobile-single-image-container {
+    display: flex;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+    flex-direction: column;
+  }
+}
+
+.image-container img {
+  border-radius: 10px;
+  background-color: white; /* Ensures the image itself has a white background */
+}
+
+.scaling-gif {
+  flex: 1;
+}
+
+.footer {
+  background-color: white;
+}
+
+.footer > .container {
+  background-color: white;
+}
+
+@media (min-width: 997px) {
+  .footer > .container {
+    max-width: 1620px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+[data-theme="dark"] .footer {
+  background-color: rgb(36, 37, 38);
+}
+
+[data-theme="dark"] footer > .container {
+  background-color: rgb(36, 37, 38);
 }

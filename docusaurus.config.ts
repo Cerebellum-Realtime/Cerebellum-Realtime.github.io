@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "Cerebellum",
   tagline: "Cerebellum",
-  favicon: "img/favicon.ico",
+  favicon: "/img/favicon.ico",
 
   // Set the production url of your site here
   url: "https://cerebellum-realtime.github.io",
@@ -62,11 +62,11 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: "img/willow_transparent.png",
+    image: "img/cerebellum_transparent.png",
     navbar: {
-      title: "Willow",
+      title: "Cerebellum",
       logo: {
-        alt: "Willow Logo",
+        alt: "Cerebellum Logo",
         src: "img/logo.png",
       },
       items: [
@@ -76,15 +76,16 @@ const config: Config = {
           sidebarId: "tutorialSidebar",
           position: "right",
           label: "Docs",
+          to: "/docs/using-cerebellum",
         },
         {
-          to: "/#team",
+          to: "/team",
           label: "Team",
           position: "right",
           activeBasePath: "never-active",
         },
         {
-          href: "https://github.com/willow-cdc",
+          href: "https://github.com/cerebellum-realtime",
           label: "GitHub",
           position: "right",
         },
@@ -93,7 +94,7 @@ const config: Config = {
     footer: {
       style: "light",
       logo: {
-        alt: "Willow Logo",
+        alt: "Cerebellum Logo",
         src: "img/logo.png",
         width: 100,
         href: "/",
@@ -108,24 +109,27 @@ const config: Config = {
             },
             {
               label: "Team",
-              to: "/#team",
+              to: "/team",
             },
             {
               label: "Docs",
-              to: "/docs/Prerequisites",
+              to: "/docs/using-cerebellum",
             },
             {
               label: "Github",
-              to: "https://github.com/willow-cdc",
+              to: "https://github.com/cerebellum-realtime",
             },
           ],
         },
       ],
-      copyright: "Copyright © 2024 Willow",
+      copyright: "Copyright © 2024 Cerebellum",
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+    },
+    colorMode: {
+      respectPrefersColorScheme: true,
     },
   } satisfies Preset.ThemeConfig,
 };

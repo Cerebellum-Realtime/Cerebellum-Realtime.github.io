@@ -1,447 +1,804 @@
 ---
 title: Case Study
-description: Willow Case Study
+description: Cerebellum Case Study
+toc_min_heading_level: 2
+toc_max_heading_level: 3
+className: "test"
 ---
 
-# Willow Case Study
+# Case Study
 
 ## Introduction
 
-Willow is an open-source, self-hosted framework for building log-based change data capture pipelines that update caches in near real-time based on changes in a database.
+Cerebellum is a drop-in infrastructure and library for scalable realtime applications. Whether starting from scratch or integrating an existing application, Cerebellum enables developers to move from development to fully scalable deployment in just a few simple steps.
 
-Willow abstracts away the complexity of setting up and configuring open source tools like Debezium and Apache Kafka. Utilizing log-based change data capture, Willow non-invasively monitors changes in a user's PostgreSQL database and reflects those row-level changes in a user's Redis cache. Without requiring in-depth technical knowledge and expertise, data pipelines can be created or deleted using Willow's web user interface, simplifying setup and teardown.
+Alongside our ready-made infrastructure, we offer a Software Development Kit (SDK) and a production-ready WebSocket server, empowering developers to deploy quickly and efficiently without the hassle of managing cloud platforms or connections.
 
-This case study provides background on caching and its tradeoffs, explains change data capture, and discusses why developers would use it to keep a cache consistent. Next, Willow's implementation and architecture are explored, and challenges encountered when creating Willow and how these were addressed is explained. Finally, Willow's roadmap for the future is outlined.
-
-## Background
-
-### General Problem Domain
-
-A web application's response time significantly influences user experience and company profitability. An Amazon study found that every 100ms of latency dropped sales by 1%. Google's research found that a 100ms improvement in mobile site speeds increased how many visitors made purchases by up to 10%. Web applications are growing increasingly complex and distributed, forcing developers to find ways to improve application speed and response time. 
-
-One source of slowdown is an application's database. Database queries can become a limiting factor for an application’s response time for various reasons, including when multiple applications are simultaneously accessing the database or when unoptimized queries block other queries from being executed. A common way to increase read response times is to utilize a cache.
-
-### Caching
-
-Caching is a strategy to improve web application performance by taking demand off of source databases and providing speedy access to data. With caching, frequently accessed data is stored in a temporary location. This is usually an in-memory form of storage, which means data can be accessed faster than persistent, disk-based storage. By utilizing caching, an application checks the cache for data before requesting it from the database. This can reduce read demands on the source, taking pressure off of the database and increasing the speed of the application overall.
-
-However, there are tradeoffs when using a cache. One major challenge is keeping data in the cache up-to-date and consistent with the source of truth. This issue is known as cache consistency.
-
-Caching is a viable strategy when there is only one application making changes to the source database. When the architecture is simple, caches can improve performance while avoiding cache inconsistency. This is the case with many types of caching strategies: read-through, write-through, and even cache-aside. Each of these strategies positions the cache either beside the application or between the application and the database. With read-through and cache-aside approaches, the cache is checked for the requested data before the application checks the database. If the data is not found in the cache, this is called a cache miss, and requires the application or cache to check the database for the missing data. Once the queried data is retrieved, it is then stored in the cache for future requests. A write-through cache mirrors what’s in the database, as any writes to the database are first sent to the cache, written there, and then forwarded to the database.
-
-<figure>
-  <img src="/img/case-study/1.2-Cache-Aside.png" className="diagram" alt="A cache aside strategy" width="85%"/>
-  <figcaption align="center">Figure 1.1: Illustration of cache-aside cache</figcaption>
+<figure className="image-container">
+   <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Infrastructure" width="85%"/> 
+   <figcaption align="center">Cerebellum's Complete Infrastructure</figcaption>
 </figure>
 
-<figure>
-  <img src="/img/case-study/1.2-Cache-Write-Through.png" className="diagram" alt="A write-through cache strategy" width="85%"/>
-  <figcaption>Figure 1.2: Illustration of write-through cache</figcaption>
+## Background: Realtime
+
+Let’s take a step back to understand the concept of realtime. Realtime is the _instantaneous_ exchange of data. Instantaneous in computing terms means to be _perceived_ as instantaneous. This metric can vary depending on the constraints of the application, but instantaneous is commonly considered to be [below 100-millisecond latency](https://www.pubnub.com/blog/how-fast-is-realtime-human-perception-and-technology/).
+
+Realtime applications are divided into two main categories, each with distinct time constraints or “deadlines” that must be met to ensure a proper response.
+
+### Realtime Categories
+
+**Hard realtime** applications demand absolute performance where timing is crucial, and deadlines **must** be met without exception. Missing a deadline in a hard realtime system can lead to total system failure and catastrophic consequences, often involving safety hazards or physical damage. The importance of a task is directly tied to meeting its deadline; missing it can render the task's value null. Examples of such systems include emergency medical devices, industrial automation systems, and flight control systems.
+
+In **soft realtime** applications, missing a deadline results in a degradation of service quality, which can negatively impact user experience and be quite frustrating. However, it does not lead to system failure or significant harm. The value of a task is somewhat correlated with meeting the deadline—if missed, the value decreases but does not become null. Examples of soft realtime systems include messaging apps, online multiplayer games, and collaborative editors. _Cerebellum is designed specifically for soft realtime applications._
+
+<div className="flex flex-row multi-image-container">
+   <figure className="image-container flex-1 flex-grow">
+      <img src="/case-study/photos/Hard_Realtime.png" className="diagram" alt="Hard Realtime" width="60%"/>  
+      <figcaption align="center">Hard Realtime</figcaption>
+   </figure>
+   <figure className="image-container flex-1 flex-grow">
+      <img src="/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="60%"/> 
+      <figcaption align="center">Soft Realtime</figcaption>
+   </figure>
+</div>
+
+Before we dive deeper into Cerebellum, we need to review a few key techniques and technologies for building realtime web applications.
+
+### Realtime Techniques & Technologies
+
+**Short polling** involves sending HTTP requests at intervals to check for new data. While simple to implement, it can create unnecessary network traffic and server load when no new updates are available.
+
+<figure className="image-container mobile-single-image-container">
+   <img src="/case-study/photos/ShortPolling_Diagram.png" className="diagram" alt="Short Polling" width="30%"/> 
+   <figcaption align="center">Short Polling</figcaption>
 </figure>
 
-<figure>
-  <img src="/img/case-study/1.2-Cache-Read-Through.png" className="diagram" alt="A read-through cache strategy" width="85%"/>
-  <figcaption>Figure 1.3: Illustration of read-through cache</figcaption>
+**Long polling** improves on this by keeping the connection open until new data arrives, reducing redundant requests. However, it still requires the client to initiate each new request, which can lead to occasional synchronization issues.
+
+<figure className="image-container mobile-single-image-container">
+   <img src="/case-study/photos/LongPolling_Diagram.png" className="diagram" alt="Long Polling" width="30%"/> 
+   <figcaption align="center">Long Polling</figcaption>
 </figure>
 
-Cache inconsistency becomes a problem when another application or component makes updates to the source database. Because the cache is unaware of these changes, it is possible for the cache to become inconsistent with the source and serve data that is no longer in sync with the source database. This out-of-sync data is referred to as **stale data**.
+**Server-Sent Events** (SSEs) further optimize this process by maintaining an open connection where the server continuously pushes updates to the client as they become available, eliminating the need for repeated requests and minimizing latency.
 
-<figure>
-  <img src="/img/case-study/1.2-Complex-Architecture.gif" className="diagram" alt="Cache inconsistency occurs in complex architectures"/>
-  <figcaption>Figure 1.4: Cache inconsistency occurs in complex architectures</figcaption>
+<figure className="image-container mobile-single-image-container">
+   <img src="/case-study/photos/SSE_Diagram.png" className="diagram" alt="Server-Sent Events" width="30%"/> 
+   <figcaption align="center">Server-Sent Events</figcaption>
 </figure>
 
-There are cache invalidation strategies, such as Time-To-Live (TTL) and polling, that attempt to mitigate this problem. 
+While SSEs are efficient for one-way updates, they do not allow the client to send data back to the server in the same connection. This is where WebSockets excel.
 
-TTL is a period of time that a value should exist in a cache before being discarded. This approach aims to minimize the presence of stale data. After the data expires and the application’s query to the cache results in a cache miss, the application queries the source database and repopulates the cache. This process incurs additional resource costs and increases demand on the source, especially for expired data that is not stale. This demand is exacerbated when the expiration time is made shorter, and checks on the database for updated data increase. Likewise, longer TTL periods increase the likelihood of stale data, which can be unacceptable for applications requiring timely data accuracy. While TTL can be fairly straightforward to implement, choosing the TTL value that reduces stale data and minimizes database queries is difficult.
+#### WebSockets
 
-<figure>
-  <img src="/img/case-study/1.2-TTL Too Short.gif" className="diagram" alt="Short TTL can result in unnecessary network requests"/>
-  <figcaption>Figure 1.5: Short TTL can result in unnecessary network requests</figcaption>
+The **WebSocket** protocol offers full-duplex communication over a single long-lived Transmission Control Protocol (TCP) connection. After an initial “handshake” to establish the connection, a dedicated low-latency channel is created, allowing for _instantaneous_ data exchange in _both_ directions.
+
+<figure className="image-container mobile-single-image-container">
+   <img src="/case-study/photos/WebSocket_Diagram1.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
+   <figcaption align="center">WebSocket Connection</figcaption>
 </figure>
 
-<figure>
-  <img src="/img/case-study/1.2-TTL Too Long.gif" className="diagram" alt="Long TTL can result in retrieving stale data"/>
-  <figcaption>Figure 1.6: Long TTL can result in retrieving stale data</figcaption>
+However, WebSockets are complex to set up and manage due to their persistent connection and stateful nature. WebSockets require both browser and server-side support, but their long-standing presence means they are widely compatible across platforms. Additionally, WebSockets suffer from head-of-line blocking, where delays in one message can impact the delivery of subsequent messages.
+
+#### WebTransport
+
+The WebTransport API is an emerging technology that offers a promising alternative to WebSockets. WebTransport utilizes multiplexed streams and datagrams over HTTP/3 and the QUIC protocol. This setup allows multiple data streams to function independently within the same connection, reducing latency and avoiding head-of-line blocking—a problem in single-stream systems like WebSockets where delays in one packet can affect all subsequent packets. WebTransport’s capabilities make it particularly effective for handling numerous simultaneous realtime data exchanges, such as video streaming or complex online games.
+
+However, WebTransport is still in development and lacks support across all browsers. It also requires server-side support, which is not yet as widely available as WebSocket support.
+
+<figure className="image-container">
+   <img src="/case-study/photos/CommunicationComparisonChart.png" className="diagram" alt="Realtime Comparison Chart" width="60%"/> 
+   <figcaption align="center">Realtime Techniques & Technologies</figcaption>
 </figure>
 
-An alternative cache invalidation strategy, polling is when the cache or application periodically checks if the cache’s data is inconsistent with the source database, updating any inconsistent data. Polling typically happens on fixed intervals, such as every 10 seconds, to ensure data consistency. While polling can decrease the time that data remains stale, it also puts extra demand on the source database by running frequent queries.
+We determined that WebSockets are the most suitable for our focus and application. However, WebSockets come with distinct complexities, particularly when it comes to scaling.
 
-<figure>
-  <img src="/img/case-study/1.2-polling.png" className="diagram" alt="Polling places additional strain on the database"  width="85%"/>
-  <figcaption>Figure 1.7: Polling places additional strain on the database</figcaption>
+### Scaling WebSocket Applications is Not Trivial
+
+Scaling web applications typically involves vertical scaling, horizontal scaling, or some combination thereof. Vertical scaling involves adding more power to a single server, while horizontal scaling spreads the load across multiple servers.
+
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/vertical_scale_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className=" w-full rounded-lg"
+         > 
+         </video>
+      </div>
+      <figcaption align="center">Vertical Scaling</figcaption>
+   </figure>
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+      <video
+         src="/case-study/videos/horizontal_scaling_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className="flex-grow w-full rounded-lg"
+         > 
+      </video>
+      </div>
+      <figcaption align="center">Horizontal Scaling</figcaption>
+   </figure>
+</div>
+
+Scaling realtime WebSocket applications comes with an additional set of unique challenges. It’s helpful to use HTTP-based applications as a benchmark to understand these challenges.
+
+#### Challenges with State
+
+One of the main differences between HTTP-based applications and WebSocket applications relates to state. In an HTTP interaction, the client initiates a request to the server, which processes the request and sends back a response, after which the connection is terminated. This type of communication is considered stateless because each request is independent and doesn’t rely on information from previous interactions. Because HTTP-based applications are stateless, any server can handle any request, making horizontal scaling more straightforward.
+
+WebSocket applications differ by maintaining an ongoing connection between the client and server, requiring each server to manage the session state and route messages accordingly. This continuity complicates scaling, as servers need to coordinate which clients are connected to them. Unlike HTTP, WebSockets require more infrastructure to maintain these persistent connections.
+
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/client_server_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className=" w-full"
+         > 
+         </video>
+      </div>
+      <figcaption align="center">Managing Connection State on a Single Server</figcaption>
+   </figure>
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <video
+         src="/case-study/videos/client_server_msg_lost_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className="flex-grow w-full rounded-lg"
+         > </video>
+      <figcaption align="center">Multiple Servers without Infrastructure to Manage Connection State</figcaption>
+   </figure>
+</div>
+
+#### Challenges with Performance
+
+Servers managing WebSocket connections face a heavier workload than those handling standard HTTP requests. WebSockets’ ongoing connections increase resource consumption, especially memory and CPU. This can lead to performance issues and a poor user experience if not properly managed.
+
+Some applications add realtime features to existing servers that also handle non-realtime tasks. While simple, this "tightly coupled" approach introduces risks as the app scales:
+
+- **Performance Bottlenecks:** Shared resources can slow down both realtime and non-realtime tasks.
+- **Scaling Challenges:** Realtime and non-realtime components may need to scale differently, making management harder.
+- **Single Point of Failure:** A failure in the server affects both components, increasing downtime risks.
+
+Decoupling the realtime and non-realtime components allows each to scale independently, improving performance and reliability as the application grows.
+
+#### Dedicated Realtime Infrastructure
+
+Scaling WebSocket applications effectively requires specialized infrastructure. However, sourcing, configuring, and maintaining such infrastructure can be a significant burden for developers, diverting attention away from core product development. A dedicated infrastructure for realtime communication not only alleviates these challenges but also ensures that both performance and state management are optimized for the unique demands of WebSocket applications.
+
+## Cerebellum's Niche
+
+For teams with a core focus on realtime, DIY solutions like Node.js' WebSocket library or Socket.io offer complete control and flexibility over data and infrastructure. However, these solutions require significant effort to set up and maintain.
+
+If realtime isn't your core product, third-party solutions like Ably or PartyKit can simplify integration and reduce setup time. These services handle infrastructure and offer easy-to-use abstractions but provide less control over data and customization.
+
+Cerebellum bridges the gap for teams seeking a balance between low effort, high flexibility, and full control over their data.
+
+To help evaluate solutions, we considered several key attributes:
+
+- **Data Persistence:** Duration and method of storing messages across sessions.
+- **User Presence:** Capability to track and report user status in real time.
+- **Open Source:** Availability of source code for inspection and modification.
+- **Data Ownership:** Control over the data generated and stored.
+- **Exactly Once Delivery:** Assurance that messages are delivered exactly once.
+- **Auto Scaling:** Ability to automatically adjust resources based on demand.
+- **Multi-Language Support:** Compatibility with different programming languages.
+- **Cost:** Overall expenses related to using and scaling the service.
+
+<figure className="image-container">
+   <img
+      src="/case-study/photos/Product_Comparison_Chart.png"
+      className="diagram"
+      alt="Realtime Solution Comparison Chart"
+      width="60%"
+   />
+   <figcaption align="center">Solution Comparison</figcaption>
 </figure>
 
-These cache invalidation strategies - TTL and polling - consist of seeking out and pulling changes from the database. For systems that don’t require constant data consistency and can endure brief moments of stale data, these strategies may be appropriate. However, TTL and polling are not appropriate for systems that require fresh data in near real-time. In the next section, we examine change data capture, a strategy that is not only more appropriate for these types of systems, but can put less demand on the source database.
+_\*Ably stores all messages for two minutes by default, with an option to increase to 72 hours in their premium package. Longer data persistence requires a third-party solution._
 
-### Change Data Capture
+Cerebellum is built for small to medium-sized development teams who want a realtime solution that handles infrastructure with strong support for data persistence, long-term storage, and an easy-to-use interface.
 
-Change data capture has many use cases, including keeping caches in sync with databases.
+## Building Cerebellum’s Infrastructure
 
-Change data capture (CDC) refers to the process of identifying and capturing changes in a **source** - a system that provides data - and then delivering those changes in near real-time to a **sink** - a system that receives data. Near real-time (or “soft real-time”) refers to the processing of data where systems can tolerate slight delays from a few seconds to a few minutes. This is where most networked communication lies and is opposed to “hard real-time” systems, where data processing is benchmarked against 250 milliseconds (the average human response time) of delay.
+Cerebellum was built with scaling in mind. This required provisioning servers for horizontal scaling, ensuring our architecture could maintain performance and reliability as the number of WebSocket connections increased.
 
-CDC can be implemented through a series of different methods, each having their own benefits and tradeoffs.
+The [CAP theorem](https://www.ibm.com/topics/cap-theorem) highlights a fundamental trade-off in distributed systems: they can prioritize either availability or consistency, but not both simultaneously. Availability ensures that data requests always receive a response, even if parts of the system fail. Consistency guarantees that all clients see the same data, which can sometimes come at the expense of longer load times.
 
-#### Timestamp
+Since Cerebellum is designed for soft realtime applications, we prioritize availability over consistency.
 
-Timestamp-based CDC involves adding metadata columns (e.g., `created_at`, `updated_at`) to each database table. One limitation is the inability to perform permanent, hard deletes of rows. Metadata of all changes, including deletes, must persist in order to detect changes. Additionally, to keep the target system in sync, the database needs to be regularly queried for changes, putting additional overhead on the source system.
+We chose AWS as our preferred platform to host the infrastructure, due to its extensive service offerings and [dominant market share](https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/) among cloud providers.
 
-<figure>
-  <img src="/img/case-study/1.3-timestamp.png" className="diagram" alt="A database table demonstrating the timestamp-based CDC method. The updated at column is used to remember when a row was last updated."  width="85%"/>
-  <figcaption>Figure 1.8: Timestamp-based CDC method—the `updated_at` column is used to remember when a row was last updated</figcaption>
+### Establishing a Connection on a Single Server
+
+We initially built our infrastructure with a single WebSocket server, allowing us to simplify development and focus on creating a stable realtime communication library.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_OneServer.png"
+      className="diagram"
+      alt="Illustration of clients connecting to a single server"
+      width="35%"
+   />
+   <figcaption align="center">Single-Server Connections</figcaption>
 </figure>
 
-#### Trigger
+We hosted our WebSocket application on a server with 0.25 vCPU and 0.5 GB of RAM. When we exceeded 4,000 concurrent users, CPU utilization was nearing 70%, which is AWS’s recommended threshold for scaling. Beyond this point, server response times could increase, and the risk of crashes becomes higher without additional resources. Moreover, relying on a single server introduces a single point of failure.
 
-Trigger-based CDC relies on the database’s built-in functionality to invoke a custom function, or trigger, whenever a change is made to a table. Changes are usually stored in a different table within the same database called a shadow table or event table. A shadow table is essentially a time ordered changelog of all operations performed in the database, providing visibility for `INSERT`, `UPDATE`, and `DELETE` changes.
+### Scaling Complexities with Multiple Servers
 
-While most database systems support triggers, this method has drawbacks. One drawback of trigger based CDC is every trigger requires an additional write operation to an event table. These additional writes impact database performance, especially at scale for write-heavy applications. Another limitation is the event table must be queried to propagate changes to any downstream processes.
+#### Scalable Servers
 
-<figure>
-  <img src="/img/case-study/1.3-trigger.png" className="diagram" alt="Two database tables demonstrating the trigger-based CDC method. Individual changes that occur in an Employees table are recorded in an Event table."/>
-  <figcaption>Figure 1.9: Trigger-based CDC method—individual changes in the `Employees` table are recorded in the `Event` table</figcaption>
+We used AWS Elastic Container Service (ECS) with AWS Fargate to set up our infrastructure for horizontal scaling. Containers are lightweight, portable units that package an application and its dependencies. These containers are created from images, which are snapshots of the application environment, including the code, libraries, and system settings.
+
+ECS is an orchestrator—it manages the number of containers running at any given time. ECS monitors server load and decides when to scale up or down accordingly. Fargate is a compute engine that eliminates the need to provision and manage servers by creating serverless containers on demand. It allows us to define a Docker or Elastic Container Registry image (our WebSocket server by default) and creates a container with a pre-specified operating system.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_ECSCluster.png"
+      className="diagram"
+      alt="Illustration of two clients connecting to a cluster of servers"
+      width="45%"
+   />
+   <figcaption align="center">Multi-Server Connections</figcaption>
 </figure>
 
-#### Log-based
+While our infrastructure could now automatically scale based on user load, users connected to different servers couldn't communicate with each other. Each server maintained its own isolated state and connection data. As a result, a user connected to one server wouldn't be able to reach a user connected to a different server.
 
-Log-based CDC involves leveraging the database transaction log — a file that keeps a record of all changes made to the database — for capturing change events and delivering those to downstream processes. In log-based CDC, the database transaction log is asynchronously parsed to determine changes instead of formally querying the database. Hence, the log-based method is the least invasive out of the three methods, requiring the least additional computational overhead on the source database.
+We needed a way for data to allow data flow and consistency between our servers. We implemented a pub/sub to facilitate this cross-server communication.
 
-Although it offers superior performance and reduced latency, the log-based method comes with its own set of tradeoffs. Database transaction log formats are not standardized, so logs between database management systems can vary and vendors can change log formats in future releases. Custom code connectors are also needed in order to read from a transaction log. Additionally, these logs usually only store changes for a particular retention period.
+#### Pub/Sub
 
-<figure>
-  <img src="/img/case-study/1.3-log.png" className="diagram" alt="Image showing the general structure of the log-based CDC method. A CDC connector reads the database's transaction log to determine changes." width="85%"/>
-  <figcaption>Figure 1.10: Log-based CDC method—A CDC connector reads the database's transaction log to determine changes</figcaption>
+Publish/Subscribe (Pub/Sub) is a messaging pattern used in distributed systems to facilitate communication between different components. For context around this discussion, we’ll define some key terms related to the pub/sub model:
+
+- **Channels** (also known as "rooms" or "topics") are communication hubs where messages are exchanged between publishers and subscribers.
+- **Subscribers** are users or systems that receive notifications when a message is sent to a channel they follow.
+- **Publishers** are users or systems that send messages to channels.
+
+In the pub/sub model, publishers and subscribers are decoupled. Publishers can send messages to channels without needing to know who the subscribers are, and subscribers receive messages without knowing who the publishers are.
+
+By implementing a pub/sub system, when a user sends a message to a server, it is received by the pub/sub system and forwarded to all subscribers of that channel, regardless of which server they are connected to. This ensures that all users receive the same information in real time, overcoming the challenges of server isolation and ensuring consistent message delivery across multiple servers.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/ChannelsPubSub.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Illustration of a User Publishing a Message to a Channel</figcaption>
 </figure>
 
-As mentioned, CDC can be used to build a low-latency data pipeline that propagates changes from a database to a cache. Out of the three, log-based CDC takes a non-invasive approach. Because it minimizes impact to database performance, we looked at log-based approaches when considering existing solutions.
+#### Redis Streams as Our Pub/Sub System
 
-## Existing Solutions
+For our pub/sub system, we used AWS ElastiCache for Redis, specifically utilizing Redis Streams. While Redis is often known for its key/value cache functionality, it also offers powerful features for building robust pub/sub systems.
 
-Log-based CDC is popular among applications requiring up-to-date data in near real-time. Developers have several options for building a log-based CDC data pipeline to replicate data from a source database to a sink cache. Multiple enterprise solutions exist, as well as various open-source projects that can be combined for a custom DIY solution. When deciding which solution to pursue, developers should consider  scalability, ease of use and connector types available.
+Redis Streams provides an append-only log data structure that supports more complex pub/sub scenarios. Key advantages include:
 
-### Enterprise Solutions
+- **Persistence:** Messages in Redis Streams can be persisted, enabling replay and recovery, which is crucial for maintaining the connection state in realtime applications (a key requirement which we will discuss in detail in the [Realtime Engineering Challenges](#realtime-engineering-challenges) section).
+- **Backpressure Handling:** Streams allow servers to regulate the rate of message consumption, preventing overload by controlling the flow of incoming messages.
 
-Multiple enterprise solutions using CDC to replicate data from a source database to a sink cache are available. Prominent solutions include Redis Data Integration and Confluent. Both take care of managing the CDC pipeline and have a number of available source and sink connectors - applications capable of either extracting changes from a data source or replicating changes to a data destination. Redis Data Integration and Confluent are built on top of open-source tools (Debezium and Apache Kafka) and provide additional benefits, like a wide selection of source and sink connectors, architecture management, and built-in scalability.
+We selected Redis Streams due to the high availability and low latency provided by AWS ElastiCache.
 
-<figure>
-  <img src="/img/case-study/2.1-Confluent-Redis.png" className="diagram" alt="Confluent and Redis logos."  width="65%"/>
-  <figcaption>Figure 2.1: Two enterprise solutions utilizing CDC: Confluent and Redis Data Integration</figcaption>
+In our Redis Streams implementation, the message flow differs slightly from traditional pub/sub systems. When a message is published, it is appended to a Redis Stream associated with a specific channel or topic. Each message is stored with a unique ID, ensuring persistence. Servers act as consumers, reading from these streams at their own pace and capacity. After retrieving messages, servers forward them to clients subscribed to the respective channels. This retains the core principles of a traditional pub/sub while also enabling data persistence.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Redis_Streams.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Illustration of Servers Reading a New Message from Redis Streams</figcaption>
 </figure>
 
-Enterprise solutions are a good fit for well-funded development teams that want a third-party to manage their architecture and hosting logistics. However, enterprise solutions come with tradeoffs, including vendor lock-in, recurring costs, and reduced infrastructure control. In particular, developers do not have control over how or when infrastructure is upgraded or maintained, which can result in service downtime.
+With our Redis Streams-based pub/sub system in place, we had to establish a single, secure public entry point while balancing load across multiple servers.
 
-### DIY Solutions
-
-An alternative to enterprise solutions, DIY solutions can be built by leveraging open-source tools, like Debezium and Apache Kafka. These tools are open-source, provide a high level of data customization, and offer a wide number of community-maintained source and sink connectors. Customizations include but aren’t limited to filtering data, transforming data, aggregating data, and horizontally scaling CDC pipelines. 
-
-<figure>
-  <img src="/img/case-study/2.2-Debezium-Kafka.png" className="diagram" alt="Debezium and Kafka logos."  width="65%"/>
-    <figcaption>Figure 2.2: Two DIY solutions for implementing CDC: Debezium and Apache Kafka</figcaption>
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_Elasticache.png"
+      className="diagram"
+      alt="Illustration of multiple clients connecting to a cluster of servers using Redis Streams as a pub/sub system"
+      width="60%"
+   />
+   <figcaption align="center">Multi-Server Connections with Redis Streams</figcaption>
 </figure>
 
-Building a DIY solution using open-source tools is a good fit for development teams that prefer to manage their architecture, have a high level of control and customization in their CDC pipeline, and avoid recurring costs from enterprise providers. However, DIY solutions require significant and complex configuration of open-source tools, and developers must provision and manage appropriate infrastructure for the CDC pipeline. The time to learn, implement, and configure these technologies can slow down teams looking to quickly deploy a CDC pipeline.
+#### Balancing the Load Distribution
 
-## Introducing Willow
+Realtime applications require high availability and fault tolerance to ensure seamless user experiences, even during partial system failures. We use an Application Load Balancer (ALB) to distribute incoming traffic across multiple servers to achieve this. The ALB prevents any server from becoming overwhelmed and enhances overall performance and reliability.
 
-Given the tradeoffs that accompany enterprise CDC solutions and the complexity of a DIY solution, our team identified a gap in the solution space. Willow was developed as an open source, user-friendly framework designed to maintain cache consistency by creating a near real-time CDC pipeline that monitors changes in a user's PostgreSQL database and reflects row-level changes in a user's Redis cache.
+We considered a few options for routing traffic:
 
-<figure>
-  <img src="/img/case-study/3-comparison_table.png" className="diagram" alt="Table comparing Willow against enterprise solutions and DIY solutions. Comparison criteria are no vendor lock in, easy to configure, infrastructure control, large number of connectors, and cost."/>
-  <figcaption>Figure 2.3: Comparing Willow with enterprise and DIY solutions</figcaption>
+- **Round Robin:** Distributes each request sequentially to the next server. This method works well when traffic is uniform and servers have similar processing power.
+- **Least Outstanding Requests:** Routes traffic to the server with the fewest active connections. This is ideal when request processing times vary and servers have different capabilities.
+
+Since our infrastructure scales by duplicating containers with identical processing power, we initially considered Round Robin. However, we cannot anticipate uniform traffic in the realtime applications. Additionally, when new servers are spun up, we need to route traffic more heavily to them to utilize their increased capacity. Therefore, Least Outstanding Requests was our top choice to ensure a more balanced load across servers.
+
+In addition to balancing load, the ALB provides other key benefits:
+
+- **Health Checks**: The ALB tracks which servers are healthy/unhealthy and re-routes traffic accordingly.
+- **SSL/TLS Encryptions**: The ALB enforces encryption to protect data between client and server.
+
+By handling these tasks, the ALB solved a crucial part of our infrastructure needs, ensuring the stability and security of our realtime applications while managing server load.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_LoadBalancer.png"
+      className="diagram"
+      alt="Illustration of a load balancer routing traffic to multiple servers"
+      width="60%"
+   />
+   <figcaption align="center">Cerebellum's Infrastructure with an Application Load Balancer</figcaption>
 </figure>
 
-Willow’s user-friendly UI abstracts away configuration complexities we encountered in the DIY solutions by guiding users through a set of forms to set up a pipeline. Once a pipeline is created, users can set up additional pipelines, view a list of existing pipelines and their configuration details, and delete a pipeline.
+### Persisting Data in a Realtime Application
 
-Willow can be deployed on users’ server of choice, allowing users to retain infrastructure control and avoiding vendor lock-in. While Willow only has a single source connector for PostgreSQL and a single sink connector for Redis, the simplicity of setting up and configuring these connectors into a CDC pipeline reduces overall deployment time and cost.
+At this stage, our architecture successfully provided realtime scaling and communication, but we recognized a major limitation in the need for historical data access. This is vital for various realtime applications, including:
 
-Willow pipelines connect a PostgreSQL database and a Redis cache, storing database rows in the Redis cache as JSON objects Updates made to the database are passed on to the cache in near real-time.
+- **Collaborative Editors:** Applications like Google Docs need to maintain past revisions.
+- **Video Conferencing:** Services like Zoom provide video recording features.
+- **Communication Apps:** Platforms like Slack require persistent message history.
 
-### Demonstration
+<figure className="image-container">
+   <video
+      src="/case-study/videos/MessageHistory.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+</figure>
+<figcaption align="center">Illustration of a Communication App without Data Persistence</figcaption>
 
-The best way to understand what Willow does is by seeing it in action. In the video below, a PostgreSQL terminal logged into the `willow` database is on the left and RedisInsight - a Redis GUI for visualizing a cache's contents - is on the right. A Willow CDC pipeline connects the source PostgreSQL instance on the left to the sink Redis cache on the right.
+#### Choosing the Right Database for Realtime Applications
 
-Initially, the PostgreSQL `store` table and the Redis cache are empty. Once a row is inserted into `store`, Willow replicates the row in the cache. After refreshing RedisInsight, we can see that the row inserted into our PostgreSQL table has been replicated in our Redis cache.
+Considerations when selecting a database for realtime applications were scalability, low latency, high throughput, and flexibility—specifically regarding dynamic data structures. Because these were our major considerations, we ruled out SQL databases, which are more rigid in structure and require complex partitioning when scaling.
 
-<figure >
-  <img src="/img/case-study/3.1-demo.gif" className="diagram screenshot" alt="A demonstration of Willow. On the left side of the screen is a PostgreSQL terminal. On the right side of the screen is a Redis cache shown in RedisInsight. An INSERT command is performed in the PostgreSQL terminal, and the inserted data automatically appears in the Redis cache."/>
+With these in mind, we chose AWS DynamoDB. DynamoDB’s ability to distribute data across multiple servers allows for smooth expansion as user bases grow, ensuring that Cerebellum-powered applications remain responsive even under heavy traffic. Its optimized read and write operations are crucial for handling the high throughput required in realtime scenarios. Moreover, DynamoDB’s flexible schema supports the dynamic and evolving data models typical in realtime application development. For these reasons, DynamoDB offers an excellent blend of scalability, performance, and adaptability, making it well-suited to our needs.
+
+#### Availability vs. Consistency
+
+With our database solution in place, we were faced with balancing availability and consistency in our realtime data interactions. This balance is essential for maintaining the responsiveness expected in realtime applications while ensuring data integrity.
+
+Direct communication between servers and databases in a realtime environment is straightforward and ensures strong consistency, but it also poses several issues:
+
+- **Increased Latency:** Each database operation requires a round trip between the server and the database, adding delays that can be detrimental in realtime applications where milliseconds matter.
+- **Connection Overhead:** Maintaining numerous open database connections for each user session can strain server and database resources, leading to inefficiencies.
+- **Database Bottlenecks:** High-volume realtime applications can overwhelm databases with rapid read/write requests, potentially causing performance degradation or system failures.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Writing_to_DB.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Strong Consistency System: Writing Data to a Database</figcaption>
 </figure>
 
-### Using Willow
+While this method ensures data consistency, the resulting latency and resource strain make it less suited for realtime applications where immediate responsiveness is optimal.
 
-1. Initially, users are greeted with a "Welcome to Willow" page, offering an invitation to create a CDC pipeline with a click of a button.
+We implemented a queue system between the servers and the database, using AWS Simple Queue Services and AWS Lambda. This approach offers several key benefits:
 
-<figure>
-  <img src="/img/case-study/3.2-1_home.png" className="diagram screenshot" alt="Willow's home page."/>
+- **Decoupling:** The queue buffers operations, letting the realtime server respond to clients without waiting for the database, ensuring quick responses.
+- **Responsiveness:** Servers can process and acknowledge client requests promptly, meeting realtime app expectations.
+- **Managed Load:** The queue controls data flow to the database, preventing performance issues from sudden write bursts.
+- **Resilience:** If the database fails temporarily, the queue holds data until it's ready, minimizing data loss risk.
+- **Eventual Consistency:** While not immediately consistent, the queue ensures all data is eventually processed, preserving integrity.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Writing_to_Queue.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Strong Availability System: Writing Data to a Queue</figcaption>
 </figure>
 
-2. The user is then asked to enter credentials for a PostgreSQL source.
+When a client sends data to Cerebellum servers, the server will immediately timestamp the message and send it to the queue. The server continues to process the request without waiting for a confirmation from the database. When the message reaches the front of the queue, a serverless function will process the message and save it to the database. If the database write fails, the queue can retry the operation or save the data in the dead-letter queue—a special queue where undeliverable or failed messages are sent, allowing developers to analyze and fix issues. This ensures data is not lost.
 
-<figure>
-  <img src="/img/case-study/3.2-2_source.png" className="diagram screenshot" alt="Willow's form for connecting to a source database."/>
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_DB_and_Queue.png"
+      className="diagram"
+      alt="Illustration of saving data to a database using a queue"
+      width="60%"
+   />
+   <figcaption align="center">Cerebellum's Infrastructure Enabling Availability with Eventual Consistency</figcaption>
 </figure>
 
-3. Once a connection to the source database is established, the user can view and select the tables and columns to be captured. The user must also provide a name for the source connector.
+This approach allowed us to prioritize availability while maintaining eventual consistency. Although there is a slight delay in data persistence, this trade-off is minor compared to the performance gains. Overall, DynamoDB’s fast, flexible nature proved to be an excellent choice for handling realtime workloads, even under heavy traffic. However, as data grows over time, the cost of storing vast amounts of information in DynamoDB increases significantly. To address this, we implemented a long-term solution for managing historical data without sacrificing performance or inflating costs.
 
-<figure>
-  <img src="/img/case-study/3.2-3_select_data.png" className="diagram screenshot" alt="Willow's form for selecting which data should be replicated from the source database."/>
+#### Archiving Data
+
+As DynamoDB tables expand, older data will likely be accessed infrequently or not at all. Leaving this data in DynamoDB can add unnecessary costs to the developer.
+
+> Let’s consider a realtime communication platform, similar to Slack. To set up this example, we make the following assumptions:
+>
+> - 100,000 users per day
+> - 20 messages per user per day
+> - 200 bytes per message
+> - Archive any data older than 1 year
+>
+> This means that in a 30 day month, we would have:
+>
+> 100,000 users/day \* 20 messages \* 200 bytes/message \* 30 days \= 12 GB per month
+>
+> AWS charges $0.25 per GB per month for DynamoDB. In our example, that would result in:
+>
+> $0.25 per GB-month \* 12 GB \= $3 per month
+>
+> If every message was left in DynamoDB indefinitely, it would result in an _additional_ $3 per month. Over 5 years, the AWS bill for storage alone would roughly cost:
+>
+> $3 \+ $6 \+ $9 \+ … \+ $180 \= $5,490
+>
+> If we were to archive all messages older than 1 year, we would get a max storage per year of:
+>
+> 12 GB \* 12 months \= 144 GB/month
+>
+> Paying for this across 5 years, the DynamoDB bill would be:
+>
+> 144 GB \* 60 months \* $0.25 per GB-month \= $2,160
+>
+> If we were archiving every month, this would be \~12GB per month. The cost of storing data in an S3 bucket is $0.023 per GB per month. This means that 1 month of storage in the S3 bucket will cost:
+>
+> 12 GB \* $0.023 per GB-month \= $0.28
+>
+> As a result, this storage cost for the S3 bucket over 5 years will be:
+>
+> $0.28 \+ $0.56 \+ $0.84 \+ … \+ $16.80 \= $512.40
+>
+> That means the total spent across 5 years would be:
+>
+> $2,160 \+ $512.40 \= $2,672.40
+>
+> The cost savings from archiving data would be $2,817.60.
+
+To archive old data, we have automated a cron job that will trigger a Lambda function once per week. This Lambda will retrieve data from DynamoDB, save it as one JSON file to an AWS S3 bucket, and remove it from the DynamoDB table. The developer can define the age that data should be archived within the Lambda function.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_ArchivingData.png"
+      className="diagram"
+      alt="Illustration of a cron job archiving data from DynamoDB to S3"
+      width="60%"
+   />
+   <figcaption align="center">Cerebellum's Infrastructure Enabling Data Archiving</figcaption>
 </figure>
 
-4. After data selection, users must enter the Redis credentials and verify the connection to the cache.
+### HTTP Endpoint
 
-<figure>
-  <img src="/img/case-study/3.2-4_sink.png" className="diagram screenshot" alt="Willow's form for selecting which data should be replicated from the source database."/>
+Our servers could now manage both WebSocket connections and HTTP traffic, which includes messages being published from the developer's backend. However, our servers were still [tightly coupled](#challenges-with-performance).
+
+We implemented a dedicated gateway for HTTP traffic using AWS API Gateway to decouple our servers and preserve performance.
+
+#### Implementation of API Gateway and AWS Lambda
+
+AWS API Gateway is the entry point for HTTP traffic, efficiently managing API requests and routing them to the appropriate backend services. It automatically scales to handle varying traffic loads, ensuring that HTTP traffic does not interfere with WebSocket connections. Additionally, API Gateway provides built-in features such as throttling and monitoring capabilities to ensure our HTTP endpoints remain performant.
+
+AWS Lambda complements the API Gateway by enabling serverless execution of code in response to HTTP GET and POST requests. This allows us to handle various types of HTTP requests without the need to manage server infrastructure. Lambda's dynamic scalability ensures that our system adapts to changing load conditions while maintaining cost efficiency.
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/buildingCB_APIGateway.png"
+      className="diagram"
+      alt="Illustration showing an API gateway with a lambda function"
+      width="60%"
+   />
+   <figcaption align="center">Cerebellum's Infrastructure Including a Dedicated HTTP Gateway</figcaption>
 </figure>
 
-5. Once the sink connection is verified, users must provide a name for the sink connection. This completes the pipeline setup.
+The addition of HTTP endpoints alongside WebSocket connections expands the functionality and flexibility of our system. Key use cases for HTTP endpoints:
 
-<figure>
-  <img src="/img/case-study/3.2-5_sink_name.png" className="diagram screenshot" alt="Willow's form for selecting which data should be replicated from the source database."/>
+- **Data Retrieval:** Use HTTP GET requests to fetch specific data or initialize application states without needing a persistent WebSocket connection.
+- **Message Posting:** HTTP POST requests allow stateless data submissions like form entries or file uploads when realtime communication isn't needed.
+- **Integration Opportunities:** API Gateway endpoints enable seamless integration with third-party services, allowing external systems to push notifications or updates to our platform.
+
+#### Integration with DynamoDB and Other Services
+
+Modern applications frequently interact with diverse systems and services, often across various languages and frameworks. REST APIs make this integration straightforward, using standard HTTP methods (GET, POST) and widely supported data formats (JSON). This approach simplifies connecting our DynamoDB database and servers with other services, ensuring smoother and more efficient data interactions.
+
+### Final Architecture
+
+This completes the design of our scalable infrastructure. Built to support a wide range of realtime applications, it integrates AWS services to provide reliable, available, and efficient data flow.
+
+<figure className="image-container">
+   <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Final Infrastructure" width="85%"/> 
+   <figcaption align="center">Cerebellum's Complete Infrastructure</figcaption>
 </figure>
 
-## Implementation
+## Realtime Engineering Challenges
 
-Willow leverages open-source technologies - Debezium, Apache Kafka, Apache Zookeeper, Kafka Connect, PostgreSQL - to create CDC pipelines and ensure that changes in source databases are updated in sink caches in near real-time. This section introduces Willow's components and explains their roles within Willow’s architecture.
+We had a fully formed architecture by this point, but we still needed to handle some of the common realtime application challenges.
 
-### Debezium
+### Sticky Sessions
 
-When we first sought to address the cache consistency problem, we prioritized open-source CDC tools that are widely used, are well documented, and implement log-based CDC. This criteria is how we landed upon Debezium.
+Our WebSocket server uses Socket.io to initialize session connections, where a session is defined as a persistent WebSocket connection between the client and the server. The process of initializing a session connection is as follows:
 
-<figure>
-  <img src="/img/case-study/4.1-database_debezium.png" className="diagram" alt="Image showing the high level relationship between a database and Debezium. Data flows from the database to Debezium."  width="65%"/>
-  <figcaption>Figure 4.1: High level relationship between database and Debezium</figcaption>
+1. The client sends an HTTP GET request to the server with \`transport=polling\` in its query parameters.
+2. The server responds with a session ID, an array of possible transport upgrades, and other connection-related information.
+   1. The session ID is used by the server to identify the client and manage the connection.
+   2. The list of upgrades typically includes WebSocket as the more efficient and preferred transport method.
+3. The client will then attempt to set up HTTP long-polling as a default first option.
+4. The client will then attempt to upgrade the connection to a WebSocket connection by making a GET request with `transport=websocket` in the query parameters.
+
+<figure className="image-container mobile-single-image-container">
+   <img 
+      src="/case-study/photos/WebSocket_Diagram.png"
+      className="diagram"
+      alt="WebSocket Connection Handshake"
+      width="25%"/> 
+   <figcaption align="center">WebSocket Connection Detailed Illustration</figcaption>
 </figure>
 
-At the heart of Willow lies Debezium, an open-source distributed platform for change data capture. Debezium monitors databases’ transaction logs and captures row-level changes for operations such as `INSERT`, `UPDATE`, and `DELETE`. It produces events for such changes, and pushes those events downstream to an event-consuming process.
+With only one container running, this handshake process can occur without complications. A potential problem arises when we introduce a second container and a load balancer. Due to the multiple round-trip nature of establishing a WebSocket connection, a user may be routed to a container that did not create the ID and thus will not recognize it.
 
-Previously, when we defined change data capture, we outlined three methods for implementing CDC. We highlighted that log-based CDC is arguably superior to the other two approaches, but a downside is that transaction logs varied in format across database management systems. For example, MySQL’s *binlog* is different from PostgreSQL’s *write-ahead log*, despite their similar purposes.
-
-<figure>
-  <img src="/img/case-study/4.1-log_names.png" className="diagram" alt="Table showing what term various database management systems use to refer to their transaction log." width="80%" />
-  <figcaption>Figure 4.2: DBMSs and their respective transaction log names</figcaption>
+<figure className="image-container">
+   <video
+      src="/case-study/videos/StickySession_Bad.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Failed WebSocket Connection to a Multi-Server Application without Sticky Sessions</figcaption>
 </figure>
 
-Debezium addresses this lack of standardization by providing connectors. These connectors read from the database and produce events that have similar structure, regardless of the type of source database. Supported databases include PostgreSQL, MongoDB, and MySQL, among others. In other words, Debezium abstracts away the complexity of dealing with unstandardized transaction logs, and provides standardization for changes to be captured and handled downstream.
+To solve this problem, we implemented “sticky sessions” by generating a cookie with the AWS load balancer and attaching it to each client request. Each subsequent request will receive a cookie in the response and include that cookie value in its request header. The load balancer will forward each request with a recognized cookie to the same server that initially handled it, bypassing the default algorithm. This ensures that the WebSocket connection is created between the associated server and the client.
 
-Debezium, to the best of our knowledge, is the only open-source CDC tool that can capture from a variety of databases. Debezium's in-depth documentation and wide usage make it a reasonable tool for Willow to use.
-
-### Apache Kafka
-
-Apache Kafka is an open-source, distributed event streaming platform.
-
-While Kafka is a broad topic and has many moving parts, the core workflow is simple: *producers* send messages to Kafka brokers, which can then be processed by *consumers*. Within Willow, Kafka is a message broker that stores streams of Debezium events.
-
-At its core, Apache Kafka consists of append-only logs, where messages are stored in sequential order. Kafka calls these logs **topics**. Topics are where **events** - records of a state change - are stored.
-
-<figure>
-  <img src="/img/case-study/4.2-kafka_log.png" className="diagram" alt="Image demonstrating that a Kafka topic is essentially a log. The topic contains four events. The first event in the log is at position 0. The next event to be placed in the topic will be appended to the end at position 4." width="90%"/>
-  <figcaption>Figure 4.3: A Kafka topic is essentially a log of events.</figcaption>
+<figure className="image-container">
+   <video
+      src="/case-study/videos/StickySession_Good.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Successful WebSocket Connection to a Multi-Server Application with Sticky Sessions Enabled</figcaption>
 </figure>
 
-A single **broker**, or individual Kafka server, is responsible for storing and managing one or more topics. A group of brokers, called a **cluster**, work together to handle incoming events. Brokers within a cluster can be **distributed** across a network, and clustered brokers can replicate each others’ topics to provide data backups.
+### Connection State Recovery
 
-Because Kafka can be distributed across different servers and enable data replication, it is highly scalable and fault tolerant. Furthermore, its core data structure, an append-only log, enables fast reads and writes.
+Users can momentarily disconnect from a server for several reasons—some common occurrences are temporary network outages or transferring from WiFi to cellular data. During this disconnection period, the user is not able to send, receive, or display the current state.
 
-Apache Kafka clusters can be handled by **Apache Zookeeper**, which manages metadata on Kafka’s components. Zookeeper functions as a centralized controller.
+Leveraging our Redis ElastiCache, we provide connection state recovery. This enables users who unexpectedly disconnect to automatically return to the same WebSocket connection, restoring their session state and avoiding re-authentication (outlined in the next section).
 
-<figure>
-  <img src="/img/case-study/4.2-debezium_to_kafka.png" className="diagram" alt="Image demonstrating the high level relationship between Debezium and Kafka. Data flows from Debezium to Kafka. Kafka stores the data in topics. Data in topics is then read by consumers."/>
-  <figcaption>4.4: High-level relationship between Debezium and Kafka</figcaption>
+In practice, when the client detects a lost connection with the server, it will try to store the last received message ID. No new data can be received during the disconnection period. Upon reconnection, the ALB will redirect the client to the same server via sticky sessions. The server will recognize the WebSocket session ID and attempt to restore the state by retrieving all missed messages from the Redis ElastiCache using Redis Streams. The messages missed between the last acknowledged message ID and the current one are fetched and delivered to the client, ensuring the state is restored.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Connection_State_Recovery.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Connection State Recovery</figcaption>
 </figure>
 
-We chose Apache Kafka for a few reasons. The first is that Debezium is natively built on top of it; there is wide support and documentation for streaming Debezium events to Kafka, and how such events can be processed by downstream consumers. The second, related reason is a tool called Kafka Connect. Kafka Connect is a framework that allows one to set up, update, and tear down source and sink connectors that use Kafka as a message broker. 
+An added benefit of this process is that upon disconnection, the client will also store any messages that have failed to send. Upon recovery, it will immediately send all buffered messages to the server.
 
-Debezium has three deployment methods: Debezium Engine, Debezium Server, and deployment through Kafka Connect. Debezium Server and Debezium Engine largely lack the ease of use provided by Kafka Connect’s REST API, and would require specifying a message broker. The third deployment method - deployment via Kafka Connect - streams changes directly to Apache Kafka. It provides an easy to use REST API for configuring and setting up connectors to Apache Kafka. Using Kafka Connect allows us to leverage Apache Kafka’s advantages, which includes persistence of records to disk in a way that is optimized for speed and efficiency.
+### Authentication
 
-<figure>
-  <img src="/img/case-study/4.2-database_connect_kafka.png" className="diagram" alt="Image demonstrating that Kafka Connect creates a Debezium connector between a database and Kafka."/>
-  <figcaption>4.5: Debezium’s PostgreSQL source connector can be deployed via Kafka Connect, creating a connection between a database and Kafka</figcaption>
+In HTTP, it's easy to handle authentication because you can send credentials like tokens with every request. With WebSockets, once the connection is established during the initial handshake, you can’t modify headers or send additional authentication data. This makes it difficult to manage security throughout the session since there's no built-in way to verify the user after the connection is open. To address this for Cerebellum’s WebSocket servers, we implemented token-based authentication to ensure that connections remain secure and properly authenticated throughout their duration.
+
+#### Token-Based Authentication
+
+A unique API key is generated with AWS Secrets when the servers are first created using our CLI. This API key is injected into every WebSocket server as an environment variable and safely retrievable in your AWS Secrets page. The API key should then be included as an environment variable on your login server.
+
+We recommend using the Cerebellum SDK to generate a short-lived token using your API key upon user authentication. This process ensures that the API key remains secure on your login servers and is not exposed to clients or external parties.
+
+Cerebellum takes the following steps to secure its servers:
+
+1. **Token Generation:**  
+   After a user logs in, the SDK generates a short-lived token tied to your API key. This token has a set expiration time to minimize misuse.
+2. **Client Authentication:**  
+   When opening a WebSocket connection, the client includes the token in the first message as a temporary credential for user authentication.
+3. **Token Verification:**  
+   The WebSocket server verifies the token using the API key stored in an environment variable, without needing to query the main database, boosting performance and scalability.
+4. **Handling Authentication Failures:**  
+   If the token is missing or invalid, the user is denied the connection, preventing unauthorized access and helping protect against DDoS attacks.
+
+<div className="flex justify-center video-container">
+   <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+      <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+         src="/case-study/videos/auth_bad_cropped.mp4"
+         loop
+         autoPlay
+         muted
+         playsInline
+         className=" w-full rounded-lg"
+         > 
+         </video>
+      </div>
+      <figcaption align="center">Failed Attempt to Connect</figcaption>
+      </figure>
+      <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
+         <div className="flex flex-grow flex-1 bg-white items-center justify-center rounded-lg">
+         <video
+            src="/case-study/videos/auth_good_cropped.mp4"
+            loop
+            autoPlay
+            muted
+            playsInline
+            className="flex-grow w-full rounded-lg"
+            > 
+         </video>
+         </div>
+      <figcaption align="center">Successful Attempt to Connect</figcaption>
+      </figure>
+</div>
+
+By implementing this token-based authentication solution, the WebSocket servers can manage connections securely and efficiently while maintaining high performance and scalability. This approach protects the integrity of the server and ensures that only authorized users can interact with your applications.
+
+### Presence
+
+In collaborative and multiplayer realtime applications, knowing who else is in the same channel or workspace is a key feature. Presence allows users to see who is active, what they’re doing, and where they’re working within the document.
+
+Initially, we implemented presence using a traditional pub/sub paradigm, which allowed users to broadcast their presence to others in the same channel. However, this approach had limitations. New users joining a channel could not see who was already present, leading to a lack of awareness and coordination among users. To overcome this, we needed a solution that could effectively manage and synchronize presence information across all users and servers.
+
+#### Utilizing ElastiCache for Presence
+
+ElastiCache with Redis OSS is an ideal solution for managing presence information in realtime applications due to its exceptional performance and low latency. Redis OSS provides an in-memory data store that supports ultra-fast data retrieval and updates, which are essential for maintaining realtime presence status. Given that Redis was already integrated into our infrastructure for the pub/sub mechanism, extending its use to handle presence data was a natural choice. Its ability to efficiently manage rapid read/write operations makes it perfect for scenarios where user presence is frequently updated. Redis’ immediate consistency ensures that presence information is always current, allowing users to experience realtime changes without delay.
+
+By leveraging Redis as our single source for presence information, we can synchronize presence data across all servers. When a user joins, leaves, or updates their presence information, the changes are immediately reflected in Redis, which is accessible by all servers in the cluster. This update is then broadcasted via the pub/sub system, notifying all users subscribed to that presence channel, and providing a consistent source of presence information for all servers.
+
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">Realtime User Presence</figcaption>
 </figure>
 
-Apache Kafka’s robust features, along with the tools that surround it - most notably, Kafka Connect - make it a logical message broker to be used with Debezium.
+#### How to Handle Disconnections
 
-### Willow Adapter
+A key challenge in building presence functionality is managing user disconnections. When a client disconnects, the server must notify other users in the presence channels, as the client can no longer update its status. This prevents stale data in the Redis cache and ensures presence information stays current.
 
-While Kafka enabled us to have a reliable streaming platform to publish database change events captured by Debezium, we still needed a way to consume those events and transform them into a suitable format for a cache. Initially, we researched a Redis Kafka Connect connector that consumes events from a Kafka topic and writes to a Redis cache. This connector converts events into Redis data types and generates a unique Redis key for each row. When assessing this connector, we were able to reflect `CREATE` and `UPDATE` changes to the cache, but `DELETE` changes were not reflected in the cache. Also, additional Kafka Connect metadata was inserted into the cache, which was undesirable since we only want database rows to be reflected in the cache.
-
-The Redis Kafka Connector connector was not optimal for Willow's needs, so we chose to implement our own custom Redis connector - a Willow Adapter for Kafka built with NodeJS. The Willow Adapter provides similar functionality to the Redis Kafka Connect connector, but it handles database level deletes appropriately by removing the associated data from the cache. The Willow Adapter also only inserts database row information - no Kafka Connect metadata is inserted. To consume messages from a Kafka topic, the KafkaJS npm package was used. To process those messages and update the cache, a custom class was created that leverages the Redis npm package.
-
-In order to provide a user-friendly UI for building a CDC pipeline, the Willow Adapter both provides a React application and acts as the REST API for Willow’s UI, simplifying setup and teardown of each pipeline.
-
-<figure>
-  <img src="/img/case-study/4.3-willow_adapter.png" className="diagram" alt="Image demonstrating that data flows from Kafka into the NodeJS app then into the sink cache."/>
-  <figcaption>Figure 4.6: Data flows from Kafka into our Willow Adapter then into the sink cache</figcaption>
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence_Disconnection_Bad.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">User Loses Connection but Presence is not Updated</figcaption>
 </figure>
 
-### PostgreSQL
+To address this, we assign a unique ID to each client connected to a server. This ID is stored in Redis along with a list of all that user’s presence channels. When a disconnection event is detected, the server automatically iterates through the list of that user’s presence channels and notifies the corresponding presence channel that the user has left. Lastly, the server removes the user’s presence information from the Redis cache to ensure it always has the most up-to-date information for everyone who joins.
 
-The final component of Willow's architecture is a PostgreSQL database. PostgreSQL is an open-source, relational database management system (RDBMS) that stores structured data in tables. Data within PostgreSQL can be retrieved by using Structured Query Language (SQL) queries.
-
-An RDBMS works well when data follows a well-defined format and associations exist between different data entities. Willow uses PostgreSQL for its RDBMS, which is appropriate since associations exist among Willow's various entities; notably, each pipeline is associated with a source and sink. Configuration details for sources and sinks also follow a well-defined format, aligning with the type of structured data PostgreSQL excels at persisting. By storing pipeline information within a PostgreSQL database, Willow can redisplay existing pipeline information in its UI.
-
-<figure>
-  <img src="/img/case-study/4.4-postgres.png" className="diagram" alt="Image demonstrating that a PostgreSQL database persists connection data for Willow."/>
-  <figcaption>Figure 4.7: Connection data for Willow is persisted by a PostgreSQL database</figcaption>
+<figure className="image-container">
+   <video
+      src="/case-study/videos/Presence_Disconnection.mp4"
+      loop
+      autoPlay
+      muted
+      playsInline
+      className="rounded-lg "
+   > </video>
+   <figcaption align="center">User Loses Connection and Presence is Successfully Updated</figcaption>
 </figure>
 
-## Architecture
+## Load Testing
 
-As shown, Willow’s pipeline is built upon various open-source tools. The components can be summarized as follows:
+Our primary load-testing strategy was focused on determining how many concurrent users a server could handle. To test this, we spun up one Cerebellum WebSocket server on an AWS Fargate container and ran an Artillery test on our cloud infrastructure.
 
-<figure>
-  <img src="/img/case-study/5-table.png" className="diagram" alt="Table summarizing Willow's individual architectural components."/>
-  <figcaption>Figure 5.1: Summary of Willow's individual architecture components</figcaption>
+One approach when auto-scaling in ECS is to scale horizontally when the CPU or memory reaches a certain percentage. [AWS recommends](https://docs.aws.amazon.com/autoscaling/plans/userguide/gs-configure-scaling-plan.html#:~:text=For%20example%2C%20the%20scaling%20plan,a%20different%20metric%2C%20or%20both.) scaling out at 40% to optimize for performance, 70% for cost, or 50% for a balanced optimization. Per this recommendation, we chose 50% as the default for high performance and reasonable cost efficiency.
+
+#### Terminology
+
+- **Max:** Maximum computing resources allocated.
+- **Baseline:** Percent utilization on the Fargate container immediately before the test.
+- **Peak:** Percent utilization on the Fargate container at peak usage during the test.
+- **Difference:** Difference between baseline and peak.
+- **Idle user:** A user that connects to the server via WebSockets and does nothing
+- **Active users:** A user that connects to the server via WebSockets and posts messages to a channel
+
+#### 1\) Limit of Concurrent Idle Users
+
+- Created 1,000 idle users over 120 seconds
+- Recorded Peak CPU and Memory usage
+
+Results:
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/load_test_idle_user.png"
+      className="diagram"
+      alt="Load testing diagram for idle users"
+      width="70%"
+   />
+   <figcaption align="center">Load Testing Results for Idle Users</figcaption>
 </figure>
 
-<figure>
-  <img src="/img/case-study/5-architecture.png" className="diagram" alt="Image showing Willow's architecture. All components mentioned in section 4 are included."/>
-  <figcaption>Figure 5.2: Willow's architecture</figcaption>
+#### 2\) Limit of Concurrent Active Users
+
+- Created 1,000 active users over 120 seconds
+- Recorded Peak CPU and Memory usage
+
+Results:
+
+<figure className="image-container">
+   <img 
+      src="/case-study/photos/load_test_active.png"
+      className="diagram"
+      alt="Load testing for active users"
+      width="70%"
+   />
+<figcaption align="center">Load Testing Results for Active Users</figcaption>
 </figure>
 
-To minimize potential configuration issues with installing Willow, we use Docker. Containerizing Willow also makes sense from a long-term perspective; Docker supports various orchestration tools like Kubernetes or Docker Swarm that allows users to manage and scale containers. In other words, Docker is not only portable and consistent across various environments, but it is also horizontally scalable. Its ease of use and portability make it an important piece of Willow.
+#### Calculations
 
-The final architecture is as follows:
+The limiting factor causing a container to scale is the CPU usage recorded in the idle users test. Assuming a linear relationship, we extrapolated the total number of users that trigger auto-scaling.
 
-<figure>
-  <img src="/img/case-study/5-architecture_with_docker.png" className="diagram" alt="Image showing Willow's architecture including Docker."/>
-  <figcaption>Figure 5.3: Docker environment in Willow's architecture</figcaption>
-</figure>
+> Baseline (%) \+ ( Difference (%) \* Scaling Factor ) \= Scaling Limit (%)
+>
+> 0.8% \+ (11.6% \* Scaling Factor) \= 50% =\> Scaling Factor ≈ 4.24
 
-## Challenges
+Therefore, if we multiply the number of users at peak by the scaling factor, we can estimate how many concurrent users the container can handle before needing to scale.
 
-Willow's development encountered two main technical challenges: Debezium configuration and event transformation.
+> 1,000 \* 4.24 \= 4,240 users
 
-### Debezium Configuration
+#### Conclusion
 
-#### Multiple Pipelines Sharing a Replication Slot
+At 0.25 vCPU and 0.5 GB memory, Cerebellum’s WebSocket servers will comfortably accommodate 4,240 users before auto-scaling.
 
-One of the challenges was centered around multiple pipelines sharing a replication slot. A replication slot is a PostgreSQL feature that keeps track of the last-read entry in the write-ahead log - PostgreSQL’s transaction log - for a specific consumer. For Willow, a consumer is equivalent to a pipeline. 
+\*These tests are not optimized to test the maximum load that could be placed on our Redis cache. Testing the Redis more extensively would include subscribing and adding presence for multiple users to one channel and testing the strain of the fanning out data and presence across that channel. This is a consideration for future load testing.
 
-In an early version, Willow reused a single replication slot for every pipeline connected to a PostgreSQL server, but only a single pipeline received changes and the remaining pipelines received none. This occurred since all pipelines for a single PostgreSQL server shared a replication slot and only one pipeline can consume from a replication slot at a time. However, pipelines connected to the same PostgreSQL server should be considered independent entities that consume all relevant changes.
+## In the Pipeline...
 
-<figure>
-  <img src="/img/case-study/6.1.1-Multiple Pipelines Sharing Replication Slot A.gif" className="diagram" alt="Animation showing two pipelines sharing a replication slot. Data flows from the database's write-ahead log and into the replication slot. Data flows from the replication slot to only one of the connected pipelines. The other pipeline does not receive any data."/>
-  <figcaption>Figure 6.1: When two pipelines share a replication slot, only one pipeline receives updates</figcaption>
-</figure>
+#### Archived Message Retrieval
 
-In order to ensure multiple pipelines using the same PostgreSQL server receive every change, Willow creates a unique replication slot for each pipeline. By doing so, Willow enables each pipeline to concurrently and separately read from the write-ahead log.
+We’ve implemented automated message archiving to reduce costs by moving older data from DynamoDB to S3. While retrieval is supported, our WebSocket server doesn’t yet automate this. Developers currently handle it manually.
 
-<figure>
-  <img src="/img/case-study/6.1.1-Multiple Pipelines Separate Replication Slots.gif" className="diagram" alt="Animation showing two pipelines with separate replication slots. Data flows from the database's write-ahead log and into the replication slots. Data flows from the replication slots to their associated pipelines."/>
-  <figcaption>Figure 6.2: When pipelines have their own, separate replication slot, each receives updates</figcaption>
-</figure>
+#### Rate Limiting
 
-A tradeoff to this approach is that a new replication slot is created in the PostgreSQL server each time a pipeline is generated. This can result in multiple replication slots, creating opportunities for inactive slots when associated pipelines are torn down. Inactive replication slots force PostgreSQL to indefinitely retain all write-ahead log files unread by the associated pipeline, filling up disk space. Database administrators must carefully monitor and purge any inactive replication slots to avoid unnecessary write-ahead log retention.
+In building our WebSocket infrastructure with an Application Load Balancer (ALB), we focused on scalability and ease of integration. The ALB effectively manages WebSocket connections, ensuring high availability and fault tolerance, though it lacks built-in rate-limiting capabilities—an important consideration for protecting servers and ensuring fair usage.
 
-#### Working with Minimum Privileged User
+Our current setup doesn’t impose rate limits on incoming WebSocket connections, leaving this aspect to be managed by external solutions or client-side throttling. While API Gateway and AWS WAF offer rate-limiting features, they introduce performance trade-offs and a need for careful cost-benefit analysis due to the complexity of configuring these services for WebSocket workloads.
 
-The second challenge was ensuring source connectors are successfully created when Willow is provided a database user that does not have `SUPERUSER` privileges. A PostgreSQL `SUPERUSER` bypasses all permission checks and accesses everything in the server. A minimum privileged user, on the other hand, only has sufficient permissions for Willow to create a source connector and replicate specific tables within the PostgreSQL server. These privileges are `REPLICATION`, `LOGIN`, database level `CREATE`, and table level `SELECT` privileges. 
+#### ElastiCache: Load Testing and Failover
 
-Debezium successfully creates a source connector to a PostgreSQL server when the provided PostgreSQL user either is a `SUPERUSER` or a minimum privileged user. Willow follows the principle of least privilege - the idea of providing users and programs only the minimum level of access needed to perform their responsibilities - by allowing end users to provide a minimum privileged PostgreSQL user.
+We have not yet tested the physical limit of our ElastiCache. Load testing should be performed by testing channel user limit and presence to determine this limit.
 
-Debezium uses the minimum privileged user to create a publication. A **publication** is a database-scoped sequential list of `INSERT`, `UPDATE`, `DELETE`, and `TRUNCATE` changes for selected tables and are how pipelines receive data for what changes occur in those tables.
+Additionally, this single ElastiCache represents a single point of failure. Our infrastructure would benefit from designating a fallback ElastiCache in case our active ElastiCache crashes.
 
-Initially, Willow worked well when provided a `SUPERUSER` but failed when given a minimum privileged user. The core issue came down to how Debezium creates publications in the source database and how Willow was configuring Debezium with a minimum privileged user. 
+#### Cloud-Agnostic Offering
 
-Initially, Willow used Debezium's `table.exclude.list` setting to specify which tables should not be replicated. By process of elimination, Debezium would then attempt to replicate all of the non-excluded tables in the database. However, if private tables exist in the database that the minimum privileged user does not have access to, these tables would not be visible when Willow queried the database to determine what tables exist, and those non-visible tables would not be listed in `table.exclude.list`. As a result, Debezium’s publication creation would fail since the publication contained tables inaccessible to the minimum privileged user.
-
-<figure>
-  <img src="/img/case-study/6.1.2-Minimum Privileged User_1.gif" className="diagram" alt="Animation showing Debezium attempting to create a publication with a minimum privileged user. Since the table.exclude.list setting is used, Debezium's publication creation attempt fails."/>
-  <figcaption>Figure 6.3: Publication creation fails when Debezium tries to create a publication with a minimum privileged user using `table.exclude.list`</figcaption>
-</figure>
-
-This issue was resolved by using Debezium's `table.include.list` instead of its exclude counterpart. This strategy of white-listing instead of black-listing tells Debezium exactly which tables to include in the publication, preventing Debezium from including tables inaccessible to the minimum privileged user.
-
-<figure>
-  <img src="/img/case-study/6.1.2-Minimum Privileged User_2.gif" className="diagram" alt="Animation showing Debezium attempting to create a publication with a minimum privileged user. Since the table.include.list setting is used, Debezium's publication creation attempt succeeds."/>
-  <figcaption>Figure 6.4: Publication creation succeeds when Debezium tries to create a publication with a minimum privileged user using `table.include.list`</figcaption>
-</figure>
-
-### Event Transformation
-
-Events generated by Debezium take the shape of a key-value pair, representing an individual table’s row change. The key contains information about the row's primary key value, and the value contains information about the type of change and the row's updated values. 
-
-Willow uses a combination of the event’s key and value to determine the Redis key, which follows the format `database.table.primarykey`. 
-
-<figure>
-  <img src="/img/case-study/6.2-transformation_process.png" className="diagram" alt="Image demonstrating the transformation process to convert database write-ahead log entries into Redis key-value pairs."/>
-  <figcaption>6.5: High-level proces of write-ahead log entries transforming into Redis key-value pairs</figcaption>
-</figure>
-
-When transforming events into Redis key-value pairs, Willow handles a few edge cases: tombstone events, tables without primary keys, and tables with composite primary keys.
-
-#### Tombstone Events
-
-When a row is deleted, Debezium generates two events. The first is a `DELETE` event containing information about the deleted row. The second, called a tombstone event, has a `key` property containing the deleted row’s primary key and a `value` property with a `null` value. 
-
-Tombstone events are used by Apache Kafka to remove all previous records related to that row in a process called log compaction. Log compaction helps Kafka reduce the size of each topic while still retaining enough information to replicate the table's current state.
-
-Since tombstone events are used for Kafka’s log compaction, the Willow Adapter ignores them when transforming Debezium events to Redis key-value pairs.
-
-#### No Primary Key
-
-A table's primary key is a column that contains a unique, not `null` value and uniquely identifies a single row. For tables with no primary keys, events have `null` keys. 
-
-In this situation, Willow is opinionated and prevents tables without primary keys from being replicated. Willow’s UI does not show tables without a primary key as an option when selecting tables to replicate. Without a primary key, it is difficult to determine which Redis key-value pair should be created, updated or deleted. 
-
-The tradeoff of this decision is that Willow cannot be used for tables without a primary key. While these types of tables are sometimes used for containing message logs, their usage is infrequent when following good database design, and their contents are not typically desirable to replicate in a cache.
-
-#### Composite Primary Key
-
-Instead of using a single column as the primary key, a table can use the combination of two or more columns to uniquely identify each row. This combination of columns is called a composite primary key. 
-
-In the visual below, the combination of the `order_id` and `payment_id` columns is the composite primary key for the Payments table.
-
-<figure>
-  <img src="/img/case-study/6.2.3-composite_pkey.png" className="diagram" alt="Database table that has a composite primary key. The two columns, order_id and payment_id, that are used in the composite primary key are boxed in green." width="90%"/>
-  <figcaption>6.6: The Payments table has a comopsite primary key comprised of the `order_id` and `payment_id` columns (boxed in green).</figcaption>
-</figure>
-
-For tables with a composite primary key, event keys contain information about all column values contributing to the row’s composite key. 
-
-Willow supports usage of composite primary keys by joining the individual values with a dot when creating the key for Redis' key-value pair, such as `database.table.keyvalue1.keyvalue2`.
-
-## Conclusion and Future Work
-
-To conclude, Willow is an open-source, self-hosted event-driven framework with a specific use case. It utilizes log-based change data capture to build event streaming pipelines, capturing row-level changes from databases and updating caches in near real-time. It solves a specific form of the cache consistency problem and bypasses various existing solutions, such as TTL and polling. With its simple and intuitive UI, as well as the ability to select which tables and columns to capture, Willow fills a niche in the cache invalidation solution space.
-
-While we are happy with Willow, there is room for improvement. The following are areas where we would like to expand upon in the future.
-
-### Decoupling Source and Sink Connectors
-
-In our current architecture, pipelines have a one-to-one relationship with a source database and a sink cache. That is, when a user wants to create a pipeline, they must enter information for some source database and sink cache, even if that information has already been entered for another Willow pipeline. In the enterprise solutions we’ve seen, source connector information can be registered without only being  used for a single pipeline; one can specify a source connector that can then be used for multiple pipelines. The same holds for sink connectors.
-
-Decoupling source and sink connectors would also enable Willow to stream changes to different caches without needing to establish new pipelines. Currently for each Willow pipeline, there is one source connector and one sink connector. In certain situations, users may want to stream changes from one source database to multiple Redis caches. To do so, for each additional cache, a user would need to create a new pipeline. However, this is not an ideal design, as each additional pipeline creates redundant Kafka topics, taking up additional disk space. By decoupling source and sink connectors, Willow users could simply tie multiple Redis sinks to the same source database in one pipeline. This would grant users more flexibility and be a more efficient use of resources. 
-
-### Deployment and Management
-
-Another feature we would like to enable is automatic deployment and management across distributed servers. Currently, Willow operates as a multi-container application on one server. While users can deploy Willow on multiple servers themselves, it would be valuable to have Willow provide that capability by default. This option would make Willow more easily available and fault-tolerant in case a container breaks. We would look into container orchestration tools like Kubernetes or Docker Swarm to implement this feature.
-
-### Observability
-
-Currently, there are no observability metrics for monitoring the health and status of Willow’s pipelines. Apache Kafka, Apache Zookeeper, and Kafka Connect all enable Java Management Extensions (JMX), which are technologies that monitor and manage Java applications. Setting up JMX would provide metrics on various groups within the Willow architecture, including Kafka brokers, Zookeeper controllers, and Kafka consumers. Furthermore, in addition to JMX metrics, Debezium connectors provide ways to set up additional monitoring. These primarily provide snapshot and streaming metrics. Adding observability features would allow Willow’s end-users to be better informed and more easily identify issues.
-
-### Other ideas
-
-Other features we would like to add include:
-- The ability to connect more types of sources and sinks. Currently, Willow only captures changes from PostgreSQL databases into Redis caches.
-- The option to encrypt certain steps in the pipeline. For example, while we currently set up Debezium to prefer to use an encrypted connection to the source database, if no certifications are provided, Debezium can default to an unencrypted connection.
-- Adding more Redis types. Currently, rows are stored as Redis JSON types within the cache. While we believe this offers the most flexibility, allowing users to store as other types (Redis Hashes, Strings) can be beneficial.
-
-## References
-
-1. [Amazon Found Every 100ms of Latency Cost them 1% in Sales](https://www.gigaspaces.com/blog/amazon-found-every-100ms-of-latency-cost-them-1-in-sales)
-2. [Google Study on Website Performance](https://www.thinkwithgoogle.com/intl/en-emea/marketing-strategies/app-and-mobile/mobile-page-speed-data/)
-3. [How Slow Queries Hurt Your Business](https://redis.com/blog/how-slow-queries-hurt-your-business/)
-4. [Cache Strategies](https://medium.com/@mmoshikoo/cache-strategies-996e91c80303)
-5. [Cache Invalidation](https://www.geeksforgeeks.org/cache-invalidation-and-the-methods-to-invalidate-cache/)
-6. [What is Change Data Capture](https://www.qlik.com/us/change-data-capture/cdc-change-data-capture)
-7. [How Fast is Real-Time?](https://www.pubnub.com/blog/how-fast-is-realtime-human-perception-and-technology/)
-8. [Change Data Capture Methods](https://www.confluent.io/learn/change-data-capture/)
-9. [Debezium](https://debezium.io/)
-10. [Apache Kafka](https://kafka.apache.org/)
-11. [PostgreSQL](https://www.postgresql.org/)
-12. [PostgreSQL Replication Slots](https://www.postgresql.org/docs/10/logicaldecoding-explanation.html#LOGICALDECODING-REPLICATION-SLOTS)
-13. [Minimum Privileged User Permissions](https://debezium.io/documentation/reference/2.5/connectors/postgresql.html#postgresql-permissions)
-14. [Tombstone Events](https://debezium.io/documentation/reference/2.5/connectors/postgresql.html#postgresql-delete-events)
-15. [Primary Keys](https://www.postgresql.org/docs/current/ddl-constraints.html#DDL-CONSTRAINTS-PRIMARY-KEYS)
-16. [Usage of Tables with No Primary Keys](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-replica-identity)
+AWS is our preferred cloud provider due to its extensive services and market dominance. However, we understand that other platforms like Azure and Google Cloud also have strong offerings, and some developers may prefer to consolidate resources with a different provider. While our current focus is on AWS, we acknowledge the potential benefits of a cloud-agnostic approach.
