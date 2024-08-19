@@ -9,7 +9,7 @@ function HomepageHeader() {
     <section
       id="hero"
       // className="- text-8xll flex h-lvh scroll-mt-60 flex-col items-center justify-center gap-8 bg-gradient-to-r from-cerebellumPurple-500 to-cerebellumPink-500 p-6 text-2xl sm:flex-col"
-      className="from-left via-middle to-right text-8xll from-3% flex h-lvh scroll-mt-60 flex-col items-center justify-center gap-8 bg-gradient-to-br to-90% p-6 text-2xl sm:flex-col"
+      className="text-8xll flex h-lvh scroll-mt-60 flex-col items-center justify-center gap-8 bg-gradient-to-br from-left via-middle to-right to-90% p-6 text-2xl sm:flex-col"
       // className="bg-gradient-to-r from-cerebellumPurple to-cerebellumPink  flex flex-col justify-center sm:flex-col p-6 items-center gap-8 scroll-mt-40 h-lvh"
     >
       <article className="relative max-w-full px-4 py-8 pb-14 font-sans text-white antialiased md:py-10">
@@ -19,8 +19,8 @@ function HomepageHeader() {
           <em className="text-white">scalable realtime applications </em>
         </h1>
         <p className="md:text mx-auto mt-1 max-w-6xl text-center text-xl leading-normal text-white md:mt-2 md:leading-10">
-          Cerebellum is an open-source solution for scaling Websocket-based
-          applications
+          <em>Cerebellum</em> is an open-source solution for scaling
+          Websocket-based applications
         </p>
         <div className="mt-5 flex w-full flex-col-reverse items-center justify-center gap-2 p-6 md:flex-row">
           <Link

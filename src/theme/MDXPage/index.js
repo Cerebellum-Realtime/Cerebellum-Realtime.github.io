@@ -10,6 +10,8 @@ import MDXContent from "@theme/MDXContent";
 import TOC from "@theme/TOC";
 import Unlisted from "@theme/Unlisted";
 import styles from "./styles.module.css";
+import TOCCollapsible from "@theme/TOCCollapsible";
+
 export default function MDXPage(props) {
   const { content: MDXPageContent } = props;
   const {
@@ -37,7 +39,7 @@ export default function MDXPage(props) {
           image={image}
         />
         <main className="">
-          <div className={clsx("row", styles.mdxPageWrapper)}>
+          <div className={clsx("row mx-0", styles.mdxPageWrapper)}>
             {!hideTableOfContents && MDXPageContent.toc.length > 0 && (
               <div className="sidebar">
                 <TOC
@@ -50,11 +52,18 @@ export default function MDXPage(props) {
             <div
               className={clsx(
                 "col max-w-7xl",
-                !hideTableOfContents && "col--8",
+                !hideTableOfContents && "col--8 p-0",
               )}
             >
               {unlisted && <Unlisted />}
               <article className="m-w-4xl p-4">
+                <div className="display mobile-toc-container">
+                  <TOCCollapsible
+                    toc={MDXPageContent.toc}
+                    minHeadingLevel={frontMatter.toc_min_heading_level}
+                    maxHeadingLevel={frontMatter.toc_max_heading_level}
+                  />
+                </div>
                 <MDXContent>
                   <MDXPageContent />
                 </MDXContent>

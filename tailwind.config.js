@@ -81,6 +81,7 @@ module.exports = {
           900: "#181733",
         },
         palePurple: "#F1E4F3",
+        componentDarkMode: "#282a2c",
       },
     },
   },

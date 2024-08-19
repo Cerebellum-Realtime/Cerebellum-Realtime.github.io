@@ -38,7 +38,7 @@ In **soft realtime** applications, missing a deadline results in a degradation o
    </figure>
    <figure className="image-container flex-1 flex-grow">
       <img src="/case-study/photos/Soft_Realtime.png" className="diagram" alt="Soft Realtime" width="60%"/> 
-      <figcaption align="center">Hard Realtime</figcaption>
+      <figcaption align="center">Soft Realtime</figcaption>
    </figure>
 </div>
 
@@ -48,21 +48,21 @@ Before we dive deeper into Cerebellum, we need to review a few key techniques an
 
 **Short polling** involves sending HTTP requests at intervals to check for new data. While simple to implement, it can create unnecessary network traffic and server load when no new updates are available.
 
-<figure className="image-container">
+<figure className="image-container mobile-single-image-container">
    <img src="/case-study/photos/ShortPolling_Diagram.png" className="diagram" alt="Short Polling" width="30%"/> 
    <figcaption align="center">Short Polling</figcaption>
 </figure>
 
 **Long polling** improves on this by keeping the connection open until new data arrives, reducing redundant requests. However, it still requires the client to initiate each new request, which can lead to occasional synchronization issues.
 
-<figure className="image-container">
+<figure className="image-container mobile-single-image-container">
    <img src="/case-study/photos/LongPolling_Diagram.png" className="diagram" alt="Long Polling" width="30%"/> 
    <figcaption align="center">Long Polling</figcaption>
 </figure>
 
 **Server-Sent Events** (SSEs) further optimize this process by maintaining an open connection where the server continuously pushes updates to the client as they become available, eliminating the need for repeated requests and minimizing latency.
 
-<figure className="image-container">
+<figure className="image-container mobile-single-image-container">
    <img src="/case-study/photos/SSE_Diagram.png" className="diagram" alt="Server-Sent Events" width="30%"/> 
    <figcaption align="center">Server-Sent Events</figcaption>
 </figure>
@@ -73,7 +73,7 @@ While SSEs are efficient for one-way updates, they do not allow the client to se
 
 The **WebSocket** protocol offers full-duplex communication over a single long-lived Transmission Control Protocol (TCP) connection. After an initial “handshake” to establish the connection, a dedicated low-latency channel is created, allowing for _instantaneous_ data exchange in _both_ directions.
 
-<figure className="image-container">
+<figure className="image-container mobile-single-image-container">
    <img src="/case-study/photos/WebSocket_Diagram1.png" className="diagram" alt="WebSocket Diagram" width="30%"/> 
    <figcaption align="center">WebSocket Connection</figcaption>
 </figure>
@@ -149,7 +149,7 @@ WebSocket applications differ by maintaining an ongoing connection between the c
          > 
          </video>
       </div>
-      <figcaption align="center">Single Server Managing Connection State</figcaption>
+      <figcaption align="center">Managing Connection State on a Single Server</figcaption>
    </figure>
    <figure className="image-container p-4 flex flex-col scaling-gif justify-center items-center">
       <video
@@ -160,7 +160,7 @@ WebSocket applications differ by maintaining an ongoing connection between the c
          playsInline
          className="flex-grow w-full rounded-lg"
          > </video>
-      <figcaption align="center">Multiple Servers without Infrastructure for Connection State Management</figcaption>
+      <figcaption align="center">Multiple Servers without Infrastructure to Manage Connection State</figcaption>
    </figure>
 </div>
 
@@ -206,10 +206,10 @@ To help evaluate solutions, we considered several key attributes:
       alt="Realtime Solution Comparison Chart"
       width="60%"
    />
-   <figcaption align="center">Comparing Solutions</figcaption>
+   <figcaption align="center">Solution Comparison</figcaption>
 </figure>
 
-\*Ably stores all messages for two minutes out of the box, with an option to increase to 72 hours in their premium package. Longer data persistence requires a third-party solution.
+_\*Ably stores all messages for two minutes by default, with an option to increase to 72 hours in their premium package. Longer data persistence requires a third-party solution._
 
 Cerebellum is built for small to medium-sized development teams who want a realtime solution that handles infrastructure with strong support for data persistence, long-term storage, and an easy-to-use interface.
 
@@ -282,7 +282,7 @@ By implementing a pub/sub system, when a user sends a message to a server, it is
       playsInline
       className="rounded-lg "
    > </video>
-   <figcaption align="center">Illustration of a User Posting a Message to a Channel</figcaption>
+   <figcaption align="center">Illustration of a User Publishing a Message to a Channel</figcaption>
 </figure>
 
 #### Redis Streams as Our Pub/Sub System
@@ -479,7 +479,7 @@ As DynamoDB tables expand, older data will likely be accessed infrequently or no
 >
 > The cost savings from archiving data would be $2,817.60.
 
-It is important to remove data that is not being used in DynamoDB to save on costs in the long term. A cron job will trigger a Lambda function once per week. This Lambda will retrieve data from DynamoDB, save it as one JSON file to an AWS S3 bucket, and remove it from the DynamoDB table. The developer can define the age that data should be archived within the Lambda function.
+To archive old data, we have automated a cron job that will trigger a Lambda function once per week. This Lambda will retrieve data from DynamoDB, save it as one JSON file to an AWS S3 bucket, and remove it from the DynamoDB table. The developer can define the age that data should be archived within the Lambda function.
 
 <figure className="image-container">
    <img 
@@ -525,6 +525,8 @@ Modern applications frequently interact with diverse systems and services, often
 
 ### Final Architecture
 
+This completes the design of our scalable infrastructure. Built to support a wide range of realtime applications, it integrates AWS services to provide reliable, available, and efficient data flow.
+
 <figure className="image-container">
    <img src="/case-study/photos/Full_Infrastructure_Diagram.png" className="diagram" alt="Cerebellum Final Infrastructure" width="85%"/> 
    <figcaption align="center">Cerebellum's Complete Infrastructure</figcaption>
@@ -543,9 +545,9 @@ Our WebSocket server uses Socket.io to initialize session connections, where a s
    1. The session ID is used by the server to identify the client and manage the connection.
    2. The list of upgrades typically includes WebSocket as the more efficient and preferred transport method.
 3. The client will then attempt to set up HTTP long-polling as a default first option.
-4. The client will then attempt to upgrade the connection to a WebSocket connection by making a GET request with \`transport=websocket\` in the query parameters.
+4. The client will then attempt to upgrade the connection to a WebSocket connection by making a GET request with `transport=websocket` in the query parameters.
 
-<figure className="image-container">
+<figure className="image-container mobile-single-image-container">
    <img 
       src="/case-study/photos/WebSocket_Diagram.png"
       className="diagram"
@@ -612,7 +614,7 @@ In HTTP, it's easy to handle authentication because you can send credentials lik
 
 A unique API key is generated with AWS Secrets when the servers are first created using our CLI. This API key is injected into every WebSocket server as an environment variable and safely retrievable in your AWS Secrets page. The API key should then be included as an environment variable on your login server.
 
-We recommend using Cerebellum SDK to generate a short-lived token using your API key upon user authentication. This process ensures that the API key remains secure on your login servers and is not exposed to clients or external parties.
+We recommend using the Cerebellum SDK to generate a short-lived token using your API key upon user authentication. This process ensures that the API key remains secure on your login servers and is not exposed to clients or external parties.
 
 Cerebellum takes the following steps to secure its servers:
 

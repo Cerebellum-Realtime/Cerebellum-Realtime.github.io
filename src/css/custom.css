@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
@@ -8,12 +12,10 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap");
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
-  --ifm-color-primary: #7771fe;
+  /* --ifm-color-primary: #7771fe; */
+  /* --ifm-color-primary: #564dfe; */
+  --ifm-color-primary: #342afe;
   --ifm-color-primary-dark: #5f5acb;
   --ifm-color-primary-darker: #474498;
   --ifm-color-primary-darkest: #302d66;
@@ -37,7 +39,15 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
+.selected {
+  color: #342afe;
+  border-bottom: 2px solid #342afe;
+}
 
+[data-theme="dark"] .selected {
+  color: #10c7fe;
+  border-bottom: 2px solid #10c7fe;
+}
 .portrait-img {
   border-radius: 50%;
 }
@@ -127,6 +137,14 @@ a[class*="footerLogoLink"]:hover {
   .col--8 {
     font-size: 18px;
   }
+
+  .mobile-toc-container {
+    display: none;
+  }
+
+  .section-mobile {
+    gap: 64px;
+  }
 }
 
 @media (min-width: 1350px) {
@@ -192,18 +210,36 @@ div.col--8 article h4 {
 @media (max-width: 997px) {
   .image-container img {
     margin: 0 auto; /* Center the entire figure horizontally */
-    width: 80%;
+    width: 100%;
   }
 
   video {
     width: 100%;
   }
+
+  .scaling-gif {
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
   .video-container {
     flex-direction: column;
     padding: 0px;
   }
+
   .multi-image-container {
     display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .mobile-single-image-container {
+    display: flex;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
     flex-direction: column;
   }
 }
@@ -217,32 +253,26 @@ div.col--8 article h4 {
   flex: 1;
 }
 
-.background-gradient {
-  /* background: radial-gradient(
-    44.48% 44.48% at 50% 50%,
-    rgba(250, 117, 248, 0.26) 0%,
-    rgba(250, 117, 248, 0) 100%
-  ); */
+.footer {
+  background-color: white;
+}
 
-  /* background: hsla(197, 100%, 63%, 1);
+.footer > .container {
+  background-color: white;
+}
 
-  background: linear-gradient(
-    90deg,
-    hsla(197, 100%, 63%, 1) 0%,
-    hsla(294, 100%, 55%, 1) 100%
-  );
+@media (min-width: 997px) {
+  .footer > .container {
+    max-width: 1620px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
 
-  background: -moz-linear-gradient(
-    90deg,
-    hsla(197, 100%, 63%, 1) 0%,
-    hsla(294, 100%, 55%, 1) 100%
-  );
+[data-theme="dark"] .footer {
+  background-color: rgb(36, 37, 38);
+}
 
-  background: -webkit-linear-gradient(
-    90deg,
-    hsla(197, 100%, 63%, 1) 0%,
-    hsla(294, 100%, 55%, 1) 100%
-  );
-
-  filter: progid: DXImageTransform.Microsoft.gradient( startColorstr="#40C9FF", endColorstr="#E81CFF", GradientType=1 ); */
+[data-theme="dark"] footer > .container {
+  background-color: rgb(36, 37, 38);
 }
