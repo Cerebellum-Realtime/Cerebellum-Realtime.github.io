@@ -11,6 +11,7 @@ import TOC from "@theme/TOC";
 import Unlisted from "@theme/Unlisted";
 import styles from "./styles.module.css";
 import TOCCollapsible from "@theme/TOCCollapsible";
+import BackToTopButton from "@theme/BackToTopButton";
 
 export default function MDXPage(props) {
   const { content: MDXPageContent } = props;
@@ -66,6 +67,7 @@ export default function MDXPage(props) {
                 </div>
                 <MDXContent>
                   <MDXPageContent />
+                  {/* <BackToTopButton /> */}
                 </MDXContent>
               </article>
             </div>
