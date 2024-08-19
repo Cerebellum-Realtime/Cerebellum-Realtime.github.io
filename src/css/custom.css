@@ -13,8 +13,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,600;1,400;1,600&display=swap");
 
 :root {
-  /* --ifm-color-primary: #7771fe; */
-  /* --ifm-color-primary: #564dfe; */
   --ifm-color-primary: #342afe;
   --ifm-color-primary-dark: #5f5acb;
   --ifm-color-primary-darker: #474498;
@@ -205,6 +203,7 @@ div.col--8 article h4 {
 
 .image-container {
   margin: 0 auto; /* Center the entire figure horizontally */
+  margin-bottom: 20px;
 }
 
 @media (max-width: 997px) {

@@ -1,7 +1,17 @@
+import { useState } from "react";
 import Layout from "@theme/Layout";
 import Member from "../components/HomepageFeatures/Member";
+import useKonamiCode from "../hooks/useKonomaiCode";
 
 const Team = () => {
+  const [isKonamiCode, setIsKonamiCode] = useState(false);
+  useKonamiCode(() => {
+    setIsKonamiCode(true);
+    setTimeout(() => {
+      setIsKonamiCode(false);
+    }, 5000);
+  });
+
   return (
     <Layout>
       <section className="sectionB" id="team">
@@ -12,7 +22,11 @@ const Team = () => {
           <div className="mx-auto flex flex-col gap-2 md:flex-row md:gap-8">
             <Member
               name="Austin Nelson"
-              image="https://dynamic-assets.gather.town/v2/sprite-profile/avatar-ByUueZ_UR7eb80XdPy3m.TKhLrRrIw1RdgSbP6w1G.Gk3dJr3nE15MeVt54zCM.r3f1cfuESoyyxW4lUUuB.ua6kq1m7YDtCPmdkEMGa.jWRxPyatM2P0bdzSnf50.E9eKT1XBkaWQnXyxKs3I.Sowlqj4RQBynJKnXFm_p.DJ3o1pYKQwu4by8Fu46O.png?d=."
+              image={
+                isKonamiCode
+                  ? "/team/gather/Austin_Gather.png"
+                  : "/team/Austin.jpg"
+              }
               location="Dallas, TX"
               personalWebsite="https://austinnelson.me/"
               github="https://github.com/nelson030"
@@ -21,7 +35,11 @@ const Team = () => {
             />
             <Member
               name="Avery Littlemore"
-              image="https://dynamic-assets.gather.town/v2/sprite-profile/avatar-KPK1RNe5O32vJ8IhOicy.jfDstPwOt5ylgXmAV5MP.q59OoBaqEImtT1VPBfv3.grBN5xvURkfu6pMDr5Qu.jWRxPyatM2P0bdzSnf50.png?d=."
+              image={
+                isKonamiCode
+                  ? "/team/gather/Avery_Gather.png"
+                  : "/team/Avery.jpg"
+              }
               location="Toronto, Canada"
               personalWebsite="https://www.averylittlemore.xyz/"
               github="https://github.com/Avery-Littlemore"
@@ -30,7 +48,11 @@ const Team = () => {
             />
             <Member
               name="Dylan Spyer"
-              image="https://dynamic-assets.gather.town/v2/sprite-profile/avatar-BEyC1iiDaoaARIjdAI4e.ajYd6R7kSfSuXp5wyacV.pa0TKP5AgAzrPBnJqShI.-MFRXXAJSAGVugzljt12.KKnwTu4eQJC_2bE2qMnE.UJy0fOWWJ9sdtdTfnVDz.uj1LBrRXG9r5jcSSMFjs.CLumQltARfCaKsKf2eWY.png?d=."
+              image={
+                isKonamiCode
+                  ? "/team/gather/Dylan_Gather.png"
+                  : "/team/Dylan.png"
+              }
               location="Austin, TX"
               personalWebsite="https://www.dylanspyer.com"
               github="https://github.com/dylanspyer"
@@ -39,7 +61,9 @@ const Team = () => {
             />
             <Member
               name="Will Conrad"
-              image="https://dynamic-assets.gather.town/v2/sprite-profile/avatar-ty0CoZao8eIAgVnSKFg7.AgRQf0McpPKEmNDfBFma.mEnAamedSiG5KSrqLaax.VnD_lobfTaapFHP9dHFb.LR6JiKUSn5bCkOM1KDkS.jWRxPyatM2P0bdzSnf50.png?d=."
+              image={
+                isKonamiCode ? "/team/gather/Will_Gather.png" : "/team/Will.jpg"
+              }
               location="Houston, TX"
               personalWebsite="https://willconrad.dev"
               github="https://github.com/wconrad265"
