@@ -2,7 +2,7 @@ interface MemberProps {
   image: string;
   name: string;
   location: string;
-  personalWebsite: string;
+  personalWebsite?: string;
   github: string;
   linkedin: string;
   email: string;
@@ -20,19 +20,19 @@ function Member({
   return (
     <div className="portrait-card flex flex-col">
       <div className="">
-        <img className="max-h-64 portrait-img" src={image} />
+        <img className="portrait-img max-h-64" src={image} />
       </div>
-      <p className="lp-name text-gray-800 dark:text-gray-300 text-lg font-semibold text-left mt-2 mb-0 p-override text-center pb-4 md:pb-0">
+      <p className="lp-name p-override mb-0 mt-2 pb-4 text-left text-center text-lg font-semibold text-gray-800 dark:text-gray-300 md:pb-0">
         {name}
       </p>
-      <p className="lp-para text-gray-600 dark:text-gray-400  text-left mb-1 p-override text-center">
+      <p className="lp-para p-override mb-1 text-left text-center text-gray-600 dark:text-gray-400">
         {location}
       </p>
-      <div className="flex gap-1 mx-auto mt-4">
-        <a
+      <div className="mx-auto mt-4 flex gap-1">
+        {personalWebsite && <a
           href={personalWebsite}
           target="_blank"
-          className="inline-block text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100"
+          className="text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100 inline-block"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -53,11 +53,11 @@ function Member({
             <path d="M11.5 3a17 17 0 0 0 0 18"></path>
             <path d="M12.5 3a17 17 0 0 1 0 18"></path>
           </svg>
-        </a>
+        </a>}
         <a
           href={github}
           target="_blank"
-          className="inline-block text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100"
+          className="text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100 inline-block"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +78,7 @@ function Member({
         <a
           href={linkedin}
           target="_blank"
-          className="inline-block text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100"
+          className="text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100 inline-block"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +102,7 @@ function Member({
         </a>
         <a
           href={`mailto:${email}`}
-          className="inline-block text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100"
+          className="text-willowGreen-600 hover:text-willowGreen-400 dark:text-willowGreen-300 dark:hover:text-willowGreen-100 inline-block"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

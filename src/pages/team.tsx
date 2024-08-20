@@ -28,7 +28,6 @@ const Team = () => {
                   : "/team/Austin.jpg"
               }
               location="Dallas, TX"
-              personalWebsite="https://austinnelson.me/"
               github="https://github.com/nelson030"
               linkedin="https://www.linkedin.com/in/austin-nelson-009556216/"
               email="nelsonaustin11@gmail.com"
