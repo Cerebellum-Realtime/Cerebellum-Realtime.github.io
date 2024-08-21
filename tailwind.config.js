@@ -89,5 +89,8 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("autoprefixer")],
+  autoprefixer: {
+    browsers: ["last 2 versions", "safari >= 7", "ie >= 10"],
+  },
 };
