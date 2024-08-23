@@ -40,7 +40,6 @@ const Team = () => {
                   : "/team/Avery.jpg"
               }
               location="Toronto, Canada"
-              personalWebsite="https://www.averylittlemore.xyz/"
               github="https://github.com/Avery-Littlemore"
               linkedin="https://www.linkedin.com/in/avery-littlemore/"
               email="avery.d.littlemore@gmail.com"
@@ -53,7 +52,6 @@ const Team = () => {
                   : "/team/Dylan.png"
               }
               location="Austin, TX"
-              personalWebsite="https://www.dylanspyer.com"
               github="https://github.com/dylanspyer"
               linkedin="https://www.linkedin.com/in/dylan-spyer/"
               email="dylanspyer@gmail.com"
