@@ -62,7 +62,6 @@ const Team = () => {
                 isKonamiCode ? "/team/gather/Will_Gather.png" : "/team/Will.jpg"
               }
               location="Houston, TX"
-              personalWebsite="https://willconrad.dev"
               github="https://github.com/wconrad265"
               linkedin="https://www.linkedin.com/in/willhconrad/"
               email="w.conrad@outlook.com"
